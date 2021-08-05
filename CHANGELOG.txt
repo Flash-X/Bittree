@@ -1,0 +1,6 @@
+2021-08-05
+==========
+
+- Initialized repository with existing Bittree C++ source code.
+- Wrote a baby test, to be greatly expanded.
+- Can successfully compile Bittree, run the test, and generate a coverage report.

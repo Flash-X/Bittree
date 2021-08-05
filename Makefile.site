@@ -1,0 +1,29 @@
+# Define the following paths:
+#  - BASEDIR: Path to the repository root directory
+BASEDIR      = $(HOME)/Documents/newrepo/OrchestrationRuntime
+GTESTDIR     = $(HOME)/Documents/googletest/googletest
+
+# Define the following compiler-related flags
+#  - CXXCOMPNAME: Name of C++ compiler {gnu, pgi, xl, clang}
+#  - CXXCOMP: The desired C++ compiler command or path
+#  - CXXFLAGS_PROD, CXXFLAGS_DEBUG: The set of compiler flags. The debug option
+#        will be chosen if --debug (or -d) is included in the setup command,
+#        otherwise the production flags will be used.
+CXXCOMPNAME  = gnu
+CXXCOMP      = mpicxx
+
+CXXFLAGS_PROD    = -g -O2 -Wno-undefined-internal
+CXXFLAGS_DEBUG   = -g -O0
+
+LDFLAGS_STD = -lstdc++
+
+# Define the follwing paths for generating code coverage reports.
+#  - LCOV: path or command for the coverage tool (lcov)
+#  - GENHTML: path or command for generating html reports (genhtml).
+#  - CXXFLAGS_COV
+#  - LDFLAGS_COV
+LCOV = lcov
+GENHTML = genhtml
+
+CXXFLAGS_COV = -fprofile-arcs -ftest-coverage
+LDFLAGS_COV  = --coverage

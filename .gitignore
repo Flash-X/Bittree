@@ -1,0 +1,6 @@
+*.x
+Coverage_Report/*
+*.o
+*.d
+*.gcda
+*.gcno
