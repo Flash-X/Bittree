@@ -10,7 +10,6 @@ MAKEFILE     = Makefile
 MAKEFILES    = $(MAKEFILE) Makefile.site
 
 include Makefile.site
-CODECOVERAGE = true
 
 # Default shell commands
 RM ?= /bin/rm
@@ -35,11 +34,7 @@ endif
 
 
 # Combine all compiler and linker flags
-ifeq ($(DEBUG),true)
-CXXFLAGS = $(CXXFLAGS_STD) $(CXXFLAGS_DEBUG) -Isrc -I.
-else
 CXXFLAGS = $(CXXFLAGS_STD) $(CXXFLAGS_PROD) -Isrc -I.
-endif
 LDFLAGS  = $(LDFLAGS_STD)
 
 

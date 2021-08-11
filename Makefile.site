@@ -12,8 +12,7 @@ GTESTDIR     = $(HOME)/Documents/googletest/googletest
 CXXCOMPNAME  = gnu
 CXXCOMP      = mpicxx
 
-CXXFLAGS_PROD    = -g -O2 -Wno-undefined-internal
-CXXFLAGS_DEBUG   = -g -O0
+CXXFLAGS_PROD    = -g -O2
 
 LDFLAGS_STD = -lstdc++
 
@@ -22,6 +21,8 @@ LDFLAGS_STD = -lstdc++
 #  - GENHTML: path or command for generating html reports (genhtml).
 #  - CXXFLAGS_COV
 #  - LDFLAGS_COV
+CODECOVERAGE = true
+
 LCOV = lcov
 GENHTML = genhtml
 
