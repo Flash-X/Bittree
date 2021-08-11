@@ -34,7 +34,7 @@ endif
 
 
 # Combine all compiler and linker flags
-CXXFLAGS = $(CXXFLAGS_STD) $(CXXFLAGS_PROD) -Isrc -I.
+CXXFLAGS = $(CXXFLAGS_STD) $(CXXFLAGS_PROD) -Iinclude -Isrc -I.
 LDFLAGS  = $(LDFLAGS_STD)
 
 
@@ -46,7 +46,8 @@ endif
 
 
 # List of sources, objects, and dependencies
-C_SRCS    = test.cpp
+C_SRCS    = main.cpp \
+			test.cpp
 
 C_OBJS    = $(addsuffix .o, $(basename $(notdir $(C_SRCS))))
 DEPS      = $(C_OBJS:.o=.d)
