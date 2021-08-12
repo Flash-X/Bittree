@@ -19,12 +19,17 @@
 // Make a space-separated list of NDIM elements from a list of 3
 #define CONCAT_NDIM(x,y,z) x
 
+// Pick the NDIM element of a list of 3
+#define SELECT_NDIM(x,y,z) x
+
 #elif NDIM==2
 #define LIST_NDIM(x,y,z) x,y
 #define CONCAT_NDIM(x,y,z) x y
+#define SELECT_NDIM(x,y,z) y
 #elif NDIM==3
 #define LIST_NDIM(x,y,z) x,y,z
 #define CONCAT_NDIM(x,y,z) x y z
+#define SELECT_NDIM(x,y,z) z
 #endif
 
 #endif

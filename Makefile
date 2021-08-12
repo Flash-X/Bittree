@@ -91,7 +91,7 @@ endif
 .PHONY: coverage
 coverage:
 ifeq ($(CODECOVERAGE), true)
-	$(LCOV) -o lcov_temp.info -c -d .
+	$(LCOV) -o lcov_temp.info -c -d . -b . --no-external
 	$(GENHTML)  -o Coverage_Report lcov_temp.info
 else
 	$(info Include --coverage in your setup line to enable code coverage.)

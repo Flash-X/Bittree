@@ -4,3 +4,4 @@ Coverage_Report/*
 *.d
 *.gcda
 *.gcno
+lcov_temp.info

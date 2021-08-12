@@ -78,7 +78,7 @@ TEST_F(BittreeUnitTest,RefinementTest){
 
     // Declare some variables
     int lev,mort,bitid,count;
-    int ijk[NDIM];
+    int ijk[3];
     bool updated, val;
     int xlim, ylim, zlim;
 
@@ -97,7 +97,7 @@ TEST_F(BittreeUnitTest,RefinementTest){
       for(  int j=0; j<ylim; ++j) {
         for(int i=0; i<xlim; ++i) {
           lev = 0;
-          CONCAT_NDIM(ijk[0]=i;, ijk[1]=j;, ijk[2]=k;) 
+          ijk[0]=i; ijk[1]=j; ijk[2]=k;
           bittree_identify(&updated,&lev,ijk,&mort,&bitid);
           if( (i==1 || j==1 || k==1) && i<=1 && j<=1 && k<=1) {
               bittree_refine_mark(&bitid,&val);
@@ -109,9 +109,8 @@ TEST_F(BittreeUnitTest,RefinementTest){
 
     // Check block count is correct after first refinement
     updated = false;
-    int true_count[3] = {4,18,80};
     bittree_block_count(&updated, &count);
-    ASSERT_EQ(count, true_count[NDIM-1]);
+    ASSERT_EQ(count, SELECT_NDIM(4,18,80) );
 
     // Second round of refinement
     bittree_refine_init();
@@ -126,7 +125,7 @@ TEST_F(BittreeUnitTest,RefinementTest){
       for(  int j=0; j<ylim; ++j) {
         for(int i=0; i<xlim; ++i) {
           lev = 1;
-          CONCAT_NDIM(ijk[0]=i;, ijk[1]=j;, ijk[2]=k;) 
+          ijk[0]=i; ijk[1]=j; ijk[2]=k;
           bittree_identify(&updated,&lev,ijk,&mort,&bitid);
           if(lev!=1) continue;
 
@@ -143,7 +142,7 @@ TEST_F(BittreeUnitTest,RefinementTest){
     updated = false;
     int true_count_2[3] = {6,46,376};
     bittree_block_count(&updated, &count);
-    ASSERT_EQ(count, true_count_2[NDIM-1]);
+    ASSERT_EQ(count, SELECT_NDIM(6,46,376) );
 
     // Check tree with bittree_identify and bittree_locate
     xlim = std::max(2*K1D,1);
@@ -162,7 +161,7 @@ TEST_F(BittreeUnitTest,RefinementTest){
         for(  int j=0; j<ylim; ++j) {
           for(int i=0; i<xlim; ++i) {
             lev = l;
-            CONCAT_NDIM(ijk[0]=i;, ijk[1]=j;, ijk[2]=k;) 
+            ijk[0]=i; ijk[1]=j; ijk[2]=k;
             bittree_identify(&updated,&lev,ijk,&mort,&bitid);
             mort++;
             if(lev!=l) continue;
@@ -174,6 +173,216 @@ TEST_F(BittreeUnitTest,RefinementTest){
       }}}
     }
 
+
+}
+
+// Test Bittree core functions
+TEST_F(BittreeUnitTest,BittreeCore){
+    int lev,mort,bitid,count,id0;
+    int id_lims[2];
+    int ijk[3];
+    bool updated, val;
+    int xlim, ylim, zlim;
+
+    val = bittree_initialized();
+    ASSERT_EQ( val, true);
+
+    bittree_refine_init();
+
+    // Test get_id0
+    updated = false;
+    bittree_get_id0(&updated, &id0);
+    ASSERT_EQ( id0, SELECT_NDIM(2,6,24) );
+
+    // Mark a single block for refinement
+    bitid = id0;
+    val = true;
+    bittree_refine_mark(&bitid,&val);
+    bittree_refine_update();
+
+    updated = true;
+    bittree_get_id0(&updated, &id0);
+    ASSERT_EQ( id0, SELECT_NDIM(2,6,24) );
+
+    // Test level count
+    updated = false;
+    bittree_level_count(&updated, &count);
+    ASSERT_EQ( count, 1);
+    updated = true;
+    bittree_level_count(&updated, &count);
+    ASSERT_EQ( count, 2);
+
+    // Test block count
+    updated = false;
+    bittree_block_count(&updated, &count);
+    ASSERT_EQ( count, SELECT_NDIM(2,6,24));
+    updated = true;
+    bittree_block_count(&updated, &count);
+    ASSERT_EQ( count, SELECT_NDIM(4,10,32));
+
+    // Test leaf count
+    updated = false;
+    bittree_leaf_count(&updated, &count);
+    ASSERT_EQ( count, SELECT_NDIM(2,6,24));
+    updated = true;
+    bittree_leaf_count(&updated, &count);
+    ASSERT_EQ( count, SELECT_NDIM(3,9,31));
+    
+    // Test delta count
+    bittree_delta_count(&count);
+    ASSERT_EQ( count, 1);
+
+    // Test check_refine_bit
+    bitid = id0;
+    bittree_check_refine_bit(&bitid,&val);
+    ASSERT_EQ( val, true);
+    bitid = id0+1;
+    bittree_check_refine_bit(&bitid,&val);
+    ASSERT_EQ( val, false);
+
+    // Test is_parent
+    bitid = id0;
+    updated = false;
+    bittree_is_parent( &updated, &bitid, &val);
+    ASSERT_EQ( val, false);
+    bitid = id0;
+    updated = true;
+    bittree_is_parent( &updated, &bitid, &val);
+    ASSERT_EQ( val, true);
+
+    // Test bittree_identify
+    //   Not updated - Wrong level
+    lev = 1;
+    ijk[0]=0; ijk[1]=0; ijk[2]=0;
+    updated = false;
+    bittree_identify(&updated,&lev,ijk,&mort,&bitid);
+    ASSERT_EQ(lev,0);
+    ASSERT_EQ(mort,0);
+    ASSERT_EQ(bitid,SELECT_NDIM(2,6,24));
+
+    //    Not updated - Out of bounds
+    lev = 0;
+    ijk[0]=234; ijk[1]=42; ijk[2]=577;
+    updated = false;
+    bittree_identify(&updated,&lev,ijk,&mort,&bitid);
+    ASSERT_EQ(lev,-1);
+    ASSERT_EQ(mort,-1);
+    ASSERT_EQ(bitid,-1);
+
+    //    Updated
+    lev = 1;
+    ijk[0]=0; ijk[1]=0; ijk[2]=0;
+    updated = true;
+    bittree_identify(&updated,&lev,ijk,&mort,&bitid);
+    ASSERT_EQ(lev,1);
+    ASSERT_EQ(mort,SELECT_NDIM(1,1,1) );
+    ASSERT_EQ(bitid, SELECT_NDIM(4,12,48) );
+
+    //    Updated - out of bounds
+    lev = 0;
+    ijk[0]=65; ijk[1]=100; ijk[2]=700;
+    updated = true;
+    bittree_identify(&updated,&lev,ijk,&mort,&bitid);
+    ASSERT_EQ(lev,-1);
+    ASSERT_EQ(mort,-1);
+    ASSERT_EQ(bitid,-1);
+
+    // Test get_level_id_limits
+    updated = false;
+    lev = 0;
+    bittree_level_bitid_limits(&updated, &lev, id_lims);
+    ASSERT_EQ( id_lims[0], SELECT_NDIM(2,6,24));
+    ASSERT_EQ( id_lims[1], SELECT_NDIM(4,12,48));
+
+    updated = true;
+    lev = 1;
+    bittree_level_bitid_limits(&updated, &lev, id_lims);
+    ASSERT_EQ( id_lims[0], SELECT_NDIM(4,12,48));
+    ASSERT_EQ( id_lims[1], SELECT_NDIM(6,16,56));
+
+    // Test bittree_locate
+    bitid = id0 + 1;
+    updated = false;
+    bittree_locate(&updated,&bitid,&lev,ijk,&mort);
+    ASSERT_EQ(lev,0);
+    ASSERT_EQ(mort,1);
+    ASSERT_EQ(ijk[0], 1);
+    for(int n=1; n<NDIM; ++n) ASSERT_EQ(ijk[n], 0);
+
+    bitid = 2112;
+    updated = false;
+    bittree_locate(&updated,&bitid,&lev,ijk,&mort);
+    ASSERT_EQ(lev,-1);
+    ASSERT_EQ(mort,-1);
+    for(int n=0; n<NDIM; ++n) ASSERT_EQ(ijk[n], -1);
+
+    bitid = id_lims[0]+1;
+    updated = true;
+    bittree_locate(&updated,&bitid,&lev,ijk,&mort);
+    ASSERT_EQ(lev,1);
+    ASSERT_EQ(mort,2);
+    ASSERT_EQ(ijk[0], 1);
+    for(int n=1; n<NDIM; ++n) ASSERT_EQ(ijk[n], 0);
+
+    bitid = 4532;
+    updated = true;
+    bittree_locate(&updated,&bitid,&lev,ijk,&mort);
+    ASSERT_EQ(lev,-1);
+    ASSERT_EQ(mort,-1);
+    for(int n=0; n<NDIM; ++n) ASSERT_EQ(ijk[n], -1);
+
+    // Test get_bitid_list
+    updated = false;
+    int mmin = 1;
+    int mmax = SELECT_NDIM(2,4,19);
+    int bitid_list[mmax-mmin];
+#if NDIM==1
+    int true_list[2] = {2,3};
+#elif NDIM==2
+    int true_list[6] = {6,7,8,9,10,11};
+#else
+    int true_list[24] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
+#endif
+    bittree_get_bitid_list(&updated, &mmin, &mmax, bitid_list);
+    for( int i=mmin; i<mmax; ++i) {
+        ASSERT_EQ( bitid_list[i-mmin], true_list[i] ); 
+    }
+
+    updated = true;
+    mmin = 1;
+    mmax = SELECT_NDIM(3,7,28);
+    int bitid_list_2[mmax-mmin];
+#if NDIM==1
+    int true_list_2[4] = {2,4,5,3};
+#elif NDIM==2
+    int true_list_2[10] = {6,12,13,14,15,7,8,9,10,11};
+#else
+    int true_list_2[32] = {24,48,49,50,51,52,53,54,55,25,26,27,28,29,30,31,32,33,34,35,36,
+                           37,38,39,40,41,42,43,44,45,46,47};
+#endif
+    bittree_get_bitid_list(&updated, &mmin, &mmax, bitid_list_2);
+    for( int i=mmin; i<mmax; ++i) {
+        ASSERT_EQ( bitid_list_2[i-mmin], true_list_2[i] ); 
+    }
+
+
+    // Test refine_reduce
+    // TODO
+
+    // Test print_2d
+    int dtype = 0;
+    bittree_print_2d(&dtype);
+
+    bittree_refine_apply();
+
+    // Test delta count outside of refine
+    bittree_delta_count(&count);
+    ASSERT_EQ( count, 0);
+
+    // Test check_refine_bit outside of refine
+    bitid = id0;
+    bittree_check_refine_bit(&bitid,&val);
+    ASSERT_EQ( val, false);
 }
 
 }
