@@ -12,7 +12,7 @@ GTESTDIR     = $(HOME)/Documents/googletest/googletest
 CXXCOMPNAME  = gnu
 CXXCOMP      = mpicxx
 
-CXXFLAGS_PROD    = -g -O2 -I$(GTESTDIR)/include
+CXXFLAGS_PROD    = -g -O0 -I$(GTESTDIR)/include
 
 LDFLAGS_STD = -lstdc++ -lgtest -L$(GTESTDIR)/mybuild/lib
 

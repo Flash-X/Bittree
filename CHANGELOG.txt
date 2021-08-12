@@ -1,3 +1,10 @@
+2021-08-12
+==========
+
+- Finished a relatively comprehensive Unit Test. This test has two parts:
+-   1. A refinement test that sets up a specific three-level mesh pattern and confirms Bittree can identify each block.
+-   2. A one-by-one test of all the functions in bittree_core (except the mpi-related refine_reduce functions).
+
 2021-08-05
 ==========
 
