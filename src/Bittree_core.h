@@ -1,3 +1,6 @@
+#ifndef BITTREE_CORE_H__
+#define BITTREE_CORE_H__
+
 #include "Bittree_bitarray.h"
 #include "Bittree_mortontree.h"
 #include "Bittree_ref.h"
@@ -177,3 +180,5 @@ extern "C" void bittree_refine_apply();
 
 /** Wrapper function the print_2d */
 extern "C" void bittree_print_2d(int *datatype=0);
+
+#endif

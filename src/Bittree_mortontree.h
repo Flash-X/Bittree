@@ -1,5 +1,5 @@
-#ifndef _9aa50c52_f364_47ed_876f_ef6dee01de72
-#define _9aa50c52_f364_47ed_876f_ef6dee01de72
+#ifndef BITTREE_MORTONTREE_H__
+#define BITTREE_MORTONTREE_H__
 
 #include "Bittree_prelude.h"
 #include "Bittree_bitarray.h"

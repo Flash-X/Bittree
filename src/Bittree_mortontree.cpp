@@ -1,6 +1,3 @@
-#ifndef _328c0dfe_e65a_477f_b38d_69b42f91736f
-#define _328c0dfe_e65a_477f_b38d_69b42f91736f
-
 #include "Flash.h"
 
 #include "Bittree_mortontree.h"
@@ -558,4 +555,3 @@ namespace BitTree {
   template MortonTree<3u, unsigned int>::Block<unsigned int> MortonTree<3u, unsigned int>::locate<unsigned int>(unsigned int) const;
   template MortonTree<3u, unsigned int>::Block<unsigned int> MortonTree<3u, unsigned int>::identify<unsigned int>(unsigned int, unsigned int const*) const;
 }
-#endif

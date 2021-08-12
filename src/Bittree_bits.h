@@ -1,8 +1,8 @@
 /** \file Functions to compute binary-related values of integers.
  */
 
-#ifndef _a3ff44bb_f654_43ab_9ed5_642f0748b709
-#define _a3ff44bb_f654_43ab_9ed5_642f0748b709
+#ifndef BITTREE_BITS_H__
+#define BITTREE_BITS_H__
 
 #include "Bittree_prelude.h"
 

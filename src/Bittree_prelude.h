@@ -4,8 +4,8 @@
  *  Sets up a Logarithm function that has size_t as its input and output type
  */
 
-#ifndef _36e30480_1361_44b3_8616_ab7c8bae0c41
-#define _36e30480_1361_44b3_8616_ab7c8bae0c41
+#ifndef BITTREE_PRELUDE_H__
+#define BITTREE_PRELUDE_H__
 
 #include <cstddef>
 #include <cstdlib>

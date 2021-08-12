@@ -1,5 +1,5 @@
-#ifndef _1345010d_9317_43fa_90c7_d2dc7bc16926
-#define _1345010d_9317_43fa_90c7_d2dc7bc16926
+#ifndef BITTREE_BITARRAY_H__
+#define BITTREE_BITARRAY_H__
 
 #include "Bittree_prelude.h"
 #include "Bittree_ref.h"

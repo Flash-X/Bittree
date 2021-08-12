@@ -1,5 +1,5 @@
-#ifndef _d30dc669_ee55_4dc4_b4c4_f2e8990456a9
-#define _d30dc669_ee55_4dc4_b4c4_f2e8990456a9
+#ifndef BITTREE_MEM_H__
+#define BITTREE_MEM_H__
 
 #include "Bittree_prelude.h"
 #include <algorithm>

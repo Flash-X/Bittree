@@ -1,6 +1,3 @@
-#ifndef _19ce2e0d_3e4f_414d_b426_cb63ef9e4d48
-#define _19ce2e0d_3e4f_414d_b426_cb63ef9e4d48
-
 #include "Bittree_bitarray.h"
 #include "Bittree_bits.h"
 #include "Bittree_mem.h"
@@ -310,4 +307,3 @@ namespace BitTree {
   template unsigned int BitArray<unsigned int>::Reader::read<4u>();
   template unsigned int BitArray<unsigned int>::Reader::read<8u>();
 }
-#endif

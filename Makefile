@@ -34,7 +34,7 @@ endif
 
 
 # Combine all compiler and linker flags
-CXXFLAGS = $(CXXFLAGS_STD) $(CXXFLAGS_PROD) -Iinclude -Isrc -I.
+CXXFLAGS = $(CXXFLAGS_STD) $(CXXFLAGS_PROD) -Isrc -I.
 LDFLAGS  = $(LDFLAGS_STD)
 
 
