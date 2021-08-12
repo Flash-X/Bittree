@@ -46,8 +46,15 @@ endif
 
 
 # List of sources, objects, and dependencies
+SRCDIR    = src
 C_SRCS    = main.cpp \
-			test.cpp
+			test.cpp \
+            $(SRCDIR)/Bittree_bitarray.cpp \
+            $(SRCDIR)/Bittree_bits.cpp \
+            $(SRCDIR)/Bittree_core.cpp \
+            $(SRCDIR)/Bittree_mem.cpp \
+            $(SRCDIR)/Bittree_mortontree.cpp \
+            $(SRCDIR)/Bittree_ref.cpp \
 
 C_OBJS    = $(addsuffix .o, $(basename $(notdir $(C_SRCS))))
 DEPS      = $(C_OBJS:.o=.d)

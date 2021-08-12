@@ -1,8 +1,8 @@
 #ifndef _74c75f6d_1c50_4b5c_96aa_bfe42eaf6e36
 #define _74c75f6d_1c50_4b5c_96aa_bfe42eaf6e36
 
-#include "bittree_prelude.hxx"
-#include "bittree_mem_defs.hxx"
+#include "Bittree_prelude.h"
+#include "Bittree_mem.h"
 
 namespace BitTree {
   template<class T> class Ref;

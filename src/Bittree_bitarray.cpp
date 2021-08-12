@@ -1,10 +1,10 @@
 #ifndef _19ce2e0d_3e4f_414d_b426_cb63ef9e4d48
 #define _19ce2e0d_3e4f_414d_b426_cb63ef9e4d48
 
-#include "bittree_bitarray_defs.hxx"
-#include "bittree_bits.hxx"
-#include "bittree_mem.hxx"
-#include "bittree_ref.hxx"
+#include "Bittree_bitarray.h"
+#include "Bittree_bits.h"
+#include "Bittree_mem.h"
+#include "Bittree_ref.h"
 
 namespace BitTree {
   template<class W>
@@ -75,12 +75,12 @@ namespace BitTree {
   unsigned BitArray<W>::count(unsigned ix0, unsigned ix1) const {
     if(ix1 <= ix0) return 0;
     unsigned iw0 = ix0 >> logw;
-    unsigned iw1 = (min(ix1, this->len)-1) >> logw;
+    unsigned iw1 = (std::min(ix1, this->len)-1) >> logw;
     W m = ones << (ix0 & (bitw-1));
     unsigned pop = 0;
     for(unsigned iw=iw0; iw <= iw1; iw++) {
       if(iw == iw1)
-        m &= ones >> (bitw-1-((min(ix1,this->len)-1)&(bitw-1)));
+        m &= ones >> (bitw-1-((std::min(ix1,this->len)-1)&(bitw-1)));
       pop += bitpop(wbuf[iw] & m);
       m = ones;
     }
@@ -94,12 +94,12 @@ namespace BitTree {
       unsigned ix0, unsigned ix1
     ) {
     if(ix1 <= ix0) return 0;
-    unsigned a_ix1 = min(ix1, a->len);
-    unsigned b_ix1 = min(ix1, b->len);
+    unsigned a_ix1 = std::min(ix1, a->len);
+    unsigned b_ix1 = std::min(ix1, b->len);
     unsigned a_iw1 = (a_ix1 + bitw-1) >> logw;
     unsigned b_iw1 = (b_ix1 + bitw-1) >> logw;
     unsigned iw0 = ix0 >> logw;
-    unsigned iw1 = max(a_iw1, b_iw1);
+    unsigned iw1 = std::max(a_iw1, b_iw1);
     W m = ones << (ix0 & (bitw-1));
     unsigned pop = 0;
     for(unsigned iw=iw0; iw < iw1; iw++) {
@@ -297,5 +297,17 @@ namespace BitTree {
     else
       return bits->find(ix0, nth);
   }
+
+  template class BitArray<unsigned int>;
+  template class FastBitArray<unsigned int>;
+
+  template void FastBitArray<unsigned int>::Builder::write<1u>(unsigned int x);
+  template void FastBitArray<unsigned int>::Builder::write<2u>(unsigned int x);
+  template void FastBitArray<unsigned int>::Builder::write<4u>(unsigned int x);
+  template void FastBitArray<unsigned int>::Builder::write<8u>(unsigned int x);
+  template unsigned int BitArray<unsigned int>::Reader::read<1u>();
+  template unsigned int BitArray<unsigned int>::Reader::read<2u>();
+  template unsigned int BitArray<unsigned int>::Reader::read<4u>();
+  template unsigned int BitArray<unsigned int>::Reader::read<8u>();
 }
 #endif

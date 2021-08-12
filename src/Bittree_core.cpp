@@ -1,67 +1,9 @@
-#include "bittree_bitarray.hxx"
-#include "bittree_mortontree.hxx"
-#include "bittree_ref.hxx"
-#include "mpi.h"
-#include <iostream>
+#include "Bittree_core.h"
 
 using namespace BitTree;
 
 typedef unsigned W;
 
-namespace { // private globals
-  struct TheTree_ {
-    virtual unsigned level_count(bool updated) = 0;
-    virtual unsigned block_count(bool updated) = 0;
-    virtual unsigned leaf_count(bool updated) = 0;
-    virtual unsigned delta_count() = 0;
-    virtual bool check_refine_bit(int bitid) = 0;
-    virtual bool is_parent(bool updated, int bitid) = 0;
-    virtual void identify(bool updated, int *lev, int *ijk, int *mort, int *bitid) = 0;
-    virtual void locate(bool updated, int bitid, int *lev, int *ijk, int *mort) = 0;
-    virtual void get_id0(bool updated, int *out) = 0;
-    virtual void get_level_id_limits(bool updated, int lev, int *ids) = 0;
-    virtual void get_bitid_list(bool updated, int mort_min, int mort_max, int *out) = 0;
-    virtual void refine_init() = 0;
-    virtual void refine_mark(int bitid, bool value) = 0;
-    virtual void refine_reduce(MPI_Comm comm) = 0;
-    virtual void refine_reduce_and(MPI_Comm comm) = 0;
-    virtual void refine_update() = 0;
-    virtual void refine_apply() = 0;
-    virtual void print_2d(int datatype=0) = 0;
-  };
-  
-  template<unsigned ndim>
-  class TheTree: public TheTree_ {
-    Ref<MortonTree<ndim,W> > tree;               //Actual Bittree
-    Ref<MortonTree<ndim,W> > tree_updated;       //Updated Bittree, before refinement is applied
-    Ref<BitArray<W> > refine_delta;              //(De)refinement flags for blocks
-    bool is_reduced;                             //Flag to track whether refine_delta is up to date across processors
-    bool is_updated;                             //Flag to track whether tree_updated matches latest refine_delta
-    bool in_refine;                              //If in_refine=false, tree_updated and refine_delta should not exist 
-  public:
-    TheTree(const unsigned top[], const bool includes[]);
-    unsigned level_count(bool updated);
-    unsigned block_count(bool updated);
-    unsigned leaf_count(bool updated);
-    unsigned delta_count();
-    bool check_refine_bit(int bitid);
-    bool is_parent(bool updated, int bitid);
-    void identify(bool updated, int *lev, int *ijk, int *mort, int *bitid);
-    void locate(bool updated, int bitid, int *lev, int *ijk, int *mort);
-    void get_id0(bool updated, int *out);
-    void get_level_id_limits(bool updated, int lev, int *ids);
-    void get_bitid_list(bool updated, int mort_min, int mort_max, int *out);
-    void refine_init();
-    void refine_mark(int bitid, bool value);
-    void refine_reduce(MPI_Comm comm);
-    void refine_reduce_and(MPI_Comm comm);
-    void refine_update();
-    void refine_apply();
-    void print_2d(int datatype=0);
-  };
-  
-  Ref<TheTree_> the_tree;
-}
 
 /** Constructor for TheTree */
 template<unsigned ndim>
@@ -341,7 +283,7 @@ void TheTree<ndim>::refine_reduce_and(MPI_Comm comm) {
 template<unsigned ndim>
 void TheTree<ndim>::refine_update() {
   if (not is_reduced) {
-    std::cout << "Bittree updating before reducing. Possible error." << endl;
+    std::cout << "Bittree updating before reducing. Possible error." << std::endl;
   }
   tree_updated = tree->refine(refine_delta);
   is_updated = true;
@@ -369,40 +311,40 @@ void TheTree<ndim>::print_2d(int datatype) {
   if (ndim==2) { 
     switch (datatype) {
       case 0: 
-        std::cout << "printing original tree (datatype=bitid): " <<endl;
+        std::cout << "printing original tree (datatype=bitid): " <<std::endl;
         break;
       case 1:
-        std::cout << "printing original tree (datatype=mort): " <<endl;
+        std::cout << "printing original tree (datatype=mort): " <<std::endl;
         break;
       case 2:
-        std::cout << "printing original tree (datatype=parent): " <<endl;
+        std::cout << "printing original tree (datatype=parent): " <<std::endl;
         break;
     }
     tree->print_if_2d(datatype);
     if(in_refine) {
-    std::cout << "printing refine_delta (indexed by bitid):" <<endl;
+    std::cout << "printing refine_delta (indexed by bitid):" <<std::endl;
     for (int j=0; j<refine_delta->length() ; j++){
       std::cout << j << ": " << refine_delta->get(j) << ";  " ;
     }
     }
-    std::cout << endl;
+    std::cout << std::endl;
     if (in_refine && is_updated) {
       switch (datatype) {
       case 0: 
-        std::cout << "printing updated tree (datatype=bitid): " <<endl;
+        std::cout << "printing updated tree (datatype=bitid): " <<std::endl;
         break;
       case 1:
-        std::cout << "printing updated tree (datatype=mort): " <<endl;
+        std::cout << "printing updated tree (datatype=mort): " <<std::endl;
         break;
       case 2:
-        std::cout << "printing updated tree (datatype=parent): " <<endl;
+        std::cout << "printing updated tree (datatype=parent): " <<std::endl;
         break;
       }
       tree_updated->print_if_2d(datatype);
     }
   }
   else {
-    std::cout << "Error: tried to print 2d Bittree but ndim is not 2!" <<endl;
+    std::cout << "Error: tried to print 2d Bittree but ndim is not 2!" <<std::endl;
   }
 }
 
@@ -596,7 +538,7 @@ extern "C" void bittree_refine_apply() {
 }
 
 /** Wrapper function the print_2d */
-extern "C" void bittree_print_2d(int *datatype=0)
+extern "C" void bittree_print_2d(int *datatype)
 {
   if(!!the_tree)
     the_tree->print_2d(*datatype) ;

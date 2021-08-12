@@ -1,9 +1,9 @@
 #ifndef _9aa50c52_f364_47ed_876f_ef6dee01de72
 #define _9aa50c52_f364_47ed_876f_ef6dee01de72
 
-#include "bittree_prelude.hxx"
-#include "bittree_bitarray_defs.hxx"
-#include "bittree_ref_defs.hxx"
+#include "Bittree_prelude.h"
+#include "Bittree_bitarray.h"
+#include "Bittree_ref.h"
 
 #include <iostream>
 

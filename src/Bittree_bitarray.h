@@ -1,8 +1,8 @@
 #ifndef _1345010d_9317_43fa_90c7_d2dc7bc16926
 #define _1345010d_9317_43fa_90c7_d2dc7bc16926
 
-#include "bittree_prelude.hxx"
-#include "bittree_ref_defs.hxx"
+#include "Bittree_prelude.h"
+#include "Bittree_ref.h"
 
 namespace BitTree {
   /** Stores, reads, and writes Bit Arrays.

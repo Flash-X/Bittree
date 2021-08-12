@@ -4,7 +4,7 @@
 #ifndef _a3ff44bb_f654_43ab_9ed5_642f0748b709
 #define _a3ff44bb_f654_43ab_9ed5_642f0748b709
 
-#include "bittree_prelude.hxx"
+#include "Bittree_prelude.h"
 
 #if defined(__IBMCPP__)
 # include "builtins.h"

@@ -3,11 +3,12 @@
 
 #include "Flash.h"
 
-#include "bittree_mortontree_defs.hxx"
-#include "bittree_bitarray.hxx"
-#include "bittree_bits.hxx"
-#include "bittree_mem.hxx"
-#include "bittree_ref.hxx"
+#include "Bittree_mortontree.h"
+
+#include "Bittree_bitarray.h"
+#include "Bittree_bits.h"
+#include "Bittree_mem.h"
+#include "Bittree_ref.h"
 
 #include <algorithm>
 #include <limits>
@@ -539,5 +540,22 @@ namespace BitTree {
     }
     return o;
   }
+
+
+  //explicit instantiation
+  template class MortonTree<1u,unsigned int>;
+  template class MortonTree<2u,unsigned int>;
+  template class MortonTree<3u,unsigned int>;
+
+  template bool MortonTree<1u,unsigned int>::inside(unsigned lev, const unsigned int x[1u]) const;
+  template bool MortonTree<2u,unsigned int>::inside(unsigned lev, const unsigned int x[2u]) const;
+  template bool MortonTree<3u,unsigned int>::inside(unsigned lev, const unsigned int x[3u]) const;
+
+  template MortonTree<1u, unsigned int>::Block<unsigned int> MortonTree<1u, unsigned int>::locate<unsigned int>(unsigned int) const;
+  template MortonTree<1u, unsigned int>::Block<unsigned int> MortonTree<1u, unsigned int>::identify<unsigned int>(unsigned int, unsigned int const*) const;
+  template MortonTree<2u, unsigned int>::Block<unsigned int> MortonTree<2u, unsigned int>::locate<unsigned int>(unsigned int) const;
+  template MortonTree<2u, unsigned int>::Block<unsigned int> MortonTree<2u, unsigned int>::identify<unsigned int>(unsigned int, unsigned int const*) const;
+  template MortonTree<3u, unsigned int>::Block<unsigned int> MortonTree<3u, unsigned int>::locate<unsigned int>(unsigned int) const;
+  template MortonTree<3u, unsigned int>::Block<unsigned int> MortonTree<3u, unsigned int>::identify<unsigned int>(unsigned int, unsigned int const*) const;
 }
 #endif
