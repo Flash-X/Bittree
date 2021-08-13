@@ -12,9 +12,20 @@ GTESTDIR     = $(HOME)/Documents/googletest/googletest
 CXXCOMPNAME  = gnu
 CXXCOMP      = mpicxx
 
-CXXFLAGS_PROD    = -g -O0 -I$(GTESTDIR)/include -Wno-undefined-internal
+CXXFLAGS_PROD = -g -O0 \
+-Wall -Wextra -pedantic \
+-Wno-sign-conversion \
+-Wno-delete-non-abstract-non-virtual-dtor \
+-Wno-sign-compare  \
+-Wno-vla-extension \
+-Werror
+#TODO fix compilation errors caused by:
+#  -Wsign-conversion
+#  -Wdelete-non-abstract-non-virtual-dtor
+#  -Wsign-compare
+#  -Wvla-extension (probably can ignore)
 
-LDFLAGS_STD = -lstdc++ -lgtest -L$(GTESTDIR)/mybuild/lib
+LDFLAGS_STD = -lstdc++ -lgtest
 
 # Define the follwing paths for generating code coverage reports.
 #  - LCOV: path or command for the coverage tool (lcov)

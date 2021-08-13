@@ -140,7 +140,6 @@ TEST_F(BittreeUnitTest,RefinementTest){
 
     // Check block count is correct after second refinement
     updated = false;
-    int true_count_2[3] = {6,46,376};
     bittree_block_count(&updated, &count);
     ASSERT_EQ(count, SELECT_NDIM(6,46,376) );
 
@@ -182,7 +181,6 @@ TEST_F(BittreeUnitTest,BittreeCore){
     int id_lims[2];
     int ijk[3];
     bool updated, val;
-    int xlim, ylim, zlim;
 
     val = bittree_initialized();
     ASSERT_EQ( val, true);
