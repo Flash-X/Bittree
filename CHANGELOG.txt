@@ -1,3 +1,10 @@
+2021-08-13
+==========
+
+- Finalized the first major update to the source code: splitting the source files into header and cpp files.
+- This required moving some function definitions around and making new function declarations.
+
+
 2021-08-12
 ==========
 
