@@ -1,3 +1,9 @@
+2021-08-14
+==========
+
+- Added a setup tool for building tests. Created a bash script with a simple test suite.
+- This also allows for the main source code of Bittree to be built as a standalone library. 
+
 2021-08-13
 ==========
 
