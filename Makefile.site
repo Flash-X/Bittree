@@ -1,6 +1,6 @@
 # Define the following paths:
 #  - BASEDIR: Path to the repository root directory
-BASEDIR      = $(HOME)/Documents/newrepo/OrchestrationRuntime
+BASEDIR      = $(HOME)/Documents/bittree
 GTESTDIR     = $(HOME)/Documents/googletest/googletest
 
 # Define the following compiler-related flags
@@ -12,7 +12,9 @@ GTESTDIR     = $(HOME)/Documents/googletest/googletest
 CXXCOMPNAME  = gnu
 CXXCOMP      = mpicxx
 
-CXXFLAGS_PROD = -g -O0 \
+CXXFLAGS_PROD = -g -O0
+
+CXXFLAGS_DEBUG = -g -O0 \
 -Wall -Wextra -pedantic \
 -Wno-sign-conversion \
 -Wno-delete-non-abstract-non-virtual-dtor \
@@ -25,15 +27,19 @@ CXXFLAGS_PROD = -g -O0 \
 #  -Wsign-compare
 #  -Wvla-extension (probably can ignore)
 
-LDFLAGS_STD = -lstdc++ -lgtest
+LDFLAGS_STD = -lstdc++
+
+# Library related
+
+#I don't need includes since I have gtest installed system wide
+CXXFLAGS_GTEST =
+LIB_GTEST = -lgtest
 
 # Define the follwing paths for generating code coverage reports.
 #  - LCOV: path or command for the coverage tool (lcov)
 #  - GENHTML: path or command for generating html reports (genhtml).
 #  - CXXFLAGS_COV
 #  - LDFLAGS_COV
-CODECOVERAGE = true
-
 LCOV = lcov
 GENHTML = genhtml
 

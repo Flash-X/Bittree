@@ -1,0 +1,15 @@
+# Define the desired binary name with BINARYNAME
+BINARYNAME          = bittree_unit_test.x
+
+# Define relevant paths
+TESTDIR             = $(BASEDIR)/test
+
+# Define compiler flags in CXXFLAGS_TEST_*
+CXXFLAGS_TEST_DEBUG = -I$(TESTDIR) $(CXXFLAGS_GTEST)
+CXXFLAGS_TEST_PROD  = -I$(TESTDIR) $(CXXFLAGS_GTEST)
+LDFLAGS_TEST        = $(LIB_GTEST)
+
+# Define list of sources in SRCS_TEST
+SRCS_TEST = \
+    $(TESTDIR)/test.cpp \
+    $(TESTDIR)/main.cpp

@@ -5,3 +5,4 @@ Coverage_Report/*
 *.gcda
 *.gcno
 lcov_temp.info
+build*

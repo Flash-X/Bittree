@@ -4,12 +4,17 @@ SHELL=/bin/sh
 ########################################################
 # Makefile flags and defintions
 
-BINARYNAME = bittree_unit_test.x
-
 MAKEFILE     = Makefile
-MAKEFILES    = $(MAKEFILE) Makefile.site
+MAKEFILES    = $(MAKEFILE) Makefile.site Makefile.base $(if $(LIBONLY),,Makefile.test)
 
 include Makefile.site
+include Makefile.base
+include Makefile.setup
+ifdef LIBONLY
+else
+include Makefile.test
+endif
+
 
 # Default shell commands
 RM ?= /bin/rm
@@ -34,8 +39,14 @@ endif
 
 
 # Combine all compiler and linker flags
-CXXFLAGS = $(CXXFLAGS_STD) $(CXXFLAGS_PROD) -Isrc -I.
-LDFLAGS  = $(LDFLAGS_STD)
+ifeq ($(DEBUG),true)
+CXXFLAGS = $(CXXFLAGS_STD) $(CXXFLAGS_DEBUG) -I$(BUILDDIR) $(CXXFLAGS_BASE) \
+           $(CXXFLAGS_TEST_DEBUG) $(CXXFLAGS_AMREX)
+else
+CXXFLAGS = $(CXXFLAGS_STD) $(CXXFLAGS_PROD) -I$(BUILDDIR) $(CXXFLAGS_BASE) \
+           $(CXXFLAGS_TEST_PROD) $(CXXFLAGS_AMREX)
+endif
+LDFLAGS  = -L$(LIB_BITTREE) -lbittree $(LDFLAGS_TEST) $(LDFLAGS_STD)
 
 
 # Add code coverage flags
@@ -46,18 +57,12 @@ endif
 
 
 # List of sources, objects, and dependencies
-SRCDIR    = src
-C_SRCS    = main.cpp \
-			test.cpp \
-            $(SRCDIR)/Bittree_bitarray.cpp \
-            $(SRCDIR)/Bittree_bits.cpp \
-            $(SRCDIR)/Bittree_core.cpp \
-            $(SRCDIR)/Bittree_mem.cpp \
-            $(SRCDIR)/Bittree_mortontree.cpp \
-            $(SRCDIR)/Bittree_ref.cpp \
-
+C_SRCS    = $(SRCS_BASE) $(SRCS_TEST)
 C_OBJS    = $(addsuffix .o, $(basename $(notdir $(C_SRCS))))
 DEPS      = $(C_OBJS:.o=.d)
+
+OBJS_TEST = $(addsuffix .o, $(basename $(notdir $(SRCS_TEST))))
+OBJS_BASE = $(addsuffix .o, $(basename $(notdir $(SRCS_BASE))))
 
 # Use vpath as suggested here: http://make.mad-scientist.net/papers/multi-architecture-builds/#single
 vpath %.cpp $(sort $(dir $(C_SRCS)))
@@ -66,22 +71,48 @@ vpath %.cpp $(sort $(dir $(C_SRCS)))
 ##########################################################
 # Makefile commands:
 
-.PHONY: default all clean test
-default: $(BINARYNAME)
-all:     $(BINARYNAME)
+.PHONY: default all clean library test install
+default: $(if $(LIBONLY), libbittree.a, $(BINARYNAME))
+all:     $(if $(LIBONLY), libbittree.a, $(BINARYNAME))
+library: libbittree.a
+ifdef LIBONLY
 test:
+else
+test: $(BINARYNAME)
 	./$(BINARYNAME)
+endif
 
 # If code coverage is being build into the test, remove any previous gcda files to avoid conflict.
-$(BINARYNAME): $(C_OBJS) $(MAKEFILES)
+$(BINARYNAME): $(OBJS_TEST) $(MAKEFILES) libbittree.a
 ifeq ($(CODECOVERAGE), true)
 	$(RM) -f *.gcda
 endif
-	$(CXXCOMP) -o $(BINARYNAME) $(C_OBJS) $(LDFLAGS)
+	$(CXXCOMP) -o $(BINARYNAME) $(OBJS_TEST) $(LDFLAGS)
 
 %.o: %.cpp $(MAKEFILES)
 	$(CXXCOMP) -c $(DEPFLAG) $(CXXFLAGS) -o $@ $<
 
+libbittree.a: $(OBJS_BASE) $(MAKEFILES)
+	ar -rcs $@ $(OBJS_BASE)
+
+install:
+ifdef LIBONLY
+	$(info Creating prefix: $(LIB_BITTREE_PREFIX))
+	@mkdir -p $(BASEDIR)/$(LIB_BITTREE_PREFIX)
+	@mkdir -p $(BASEDIR)/$(LIB_BITTREE_PREFIX)/include
+	@mkdir -p $(BASEDIR)/$(LIB_BITTREE_PREFIX)/lib
+
+	$(info Installing library...)
+	@cp libbittree.a $(BASEDIR)/$(LIB_BITTREE_PREFIX)/lib
+
+	$(info Installing headers...)
+	@cp setup.log $(BASEDIR)/$(LIB_BITTREE_PREFIX)
+	@cp Bittree_constants.h $(BASEDIR)/$(LIB_BITTREE_PREFIX)/include
+	@for filename in $(HEADERS_BASE); do \
+	    cp $$filename $(BASEDIR)/$(LIB_BITTREE_PREFIX)/include; \
+	    done
+	$(info Success!)
+endif
 
 # Clean removes all intermediate files
 clean:
@@ -98,7 +129,7 @@ endif
 .PHONY: coverage
 coverage:
 ifeq ($(CODECOVERAGE), true)
-	$(LCOV) -o lcov_temp.info -c -d . -b . --no-external
+	$(LCOV) -o lcov_temp.info -c -d . -b $(BASEDIR) --no-external
 	$(GENHTML)  -o Coverage_Report lcov_temp.info
 else
 	$(info Include --coverage in your setup line to enable code coverage.)

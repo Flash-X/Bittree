@@ -1,7 +1,7 @@
 #ifndef MACROS_H__
 #define MACROS_H__
 
-#include "constants.h"
+#include "Bittree_constants.h"
 
 #ifndef NDIM
 #error NDIM needs to be defined
