@@ -13,6 +13,7 @@ typedef unsigned W;
 
 namespace { // private globals
   struct TheTree_ {
+    virtual ~TheTree_() = default;
     virtual unsigned level_count(bool updated) = 0;
     virtual unsigned block_count(bool updated) = 0;
     virtual unsigned leaf_count(bool updated) = 0;

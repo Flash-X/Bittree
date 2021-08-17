@@ -15,9 +15,8 @@ CXXCOMP      = mpicxx
 CXXFLAGS_PROD = -g -O0
 
 CXXFLAGS_DEBUG = -g -O0 \
--Wall -Wextra -pedantic \
+-Wall -Wextra -pedantic -Wconversion\
 -Wno-sign-conversion \
--Wno-delete-non-abstract-non-virtual-dtor \
 -Wno-sign-compare  \
 -Wno-vla-extension \
 -Werror
