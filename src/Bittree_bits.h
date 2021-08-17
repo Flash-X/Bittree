@@ -49,20 +49,20 @@ namespace BitTree {
     return x == 0 ? 0 : 1 + __cnttz4(x);
   }
   inline int bitffs(unsigned long x) {
-    return x == 0 ? 0 : 1 + __cnttz4(x);
+    return x == 0 ? 0 : 1 + __cnttz8(x);
   }
   inline int bitffs(unsigned long long x) {
     return x == 0 ? 0 : 1 + __cnttz8(x);
   }
 #elif defined(__GNUC__)
   inline int bitffs(unsigned int x) {
-    return __builtin_ffs(x);
+    return x == 0 ? 0 : 1 + __builtin_ctz(x);
   }
   inline int bitffs(unsigned long x) {
-    return __builtin_ffsl(x);
+    return x == 0 ? 0 : 1 + __builtin_ctzl(x);
   }
   inline int bitffs(unsigned long long x) {
-    return __builtin_ffsll(x);
+    return x == 0 ? 0 : 1 + __builtin_ctzll(x);
   }
 #else
   /** Returns one plus the index of the least significant 1-bit of x, 

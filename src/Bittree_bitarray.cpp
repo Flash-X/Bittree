@@ -78,7 +78,7 @@ namespace BitTree {
     for(unsigned iw=iw0; iw <= iw1; iw++) {
       if(iw == iw1)
         m &= ones >> (bitw-1-((std::min(ix1,this->len)-1)&(bitw-1)));
-      pop += bitpop(wbuf[iw] & m);
+      pop += static_cast<unsigned>(bitpop(wbuf[iw] & m));
       m = ones;
     }
     return pop;
@@ -104,7 +104,7 @@ namespace BitTree {
       aw &= ones >> (iw+1 < a_iw1 ? 0 : bitw-1-((a_ix1-1)&(bitw-1)));
       W bw = iw < b_iw1 ? b->wbuf[iw] : W(0);
       bw &= ones >> (iw+1 < b_iw1 ? 0 : bitw-1-((b_ix1-1)&(bitw-1)));
-      pop += bitpop(m & (aw ^ bw));
+      pop += static_cast<unsigned>(bitpop(m & (aw ^ bw)));
       m = ones;
     }
     return pop;
@@ -118,11 +118,11 @@ namespace BitTree {
       if(iw >= len>>logw)
         m &= ones >> (bitw-1-((len-1)&(bitw-1)));
       W w = m & wbuf[iw];
-      unsigned pop = bitpop(w);
+      unsigned pop = static_cast<unsigned>(bitpop(w));
       if(pop > nth) {
         while(nth--)
           w &= w - 1;
-        return (iw<<logw) + bitffs(w)-1u;
+        return (iw<<logw) + static_cast<unsigned>(bitffs(w)) -1u;
       }
       nth -= pop;
       m = ones;
@@ -244,10 +244,10 @@ namespace BitTree {
         *pchk++ = chkpop + x;
       else {
         W m = ~W(0) >> (BitArray<W>::bitw-(bitc-(ix&(bitc-1u))));
-        *pchk++ = chkpop + bitpop(x & m);
+        *pchk++ = chkpop + static_cast<unsigned>(bitpop(x & m));
       }
     }
-    chkpop += n == 1 ? x : bitpop(x);
+    chkpop += n == 1 ? x : static_cast<unsigned>(bitpop(x));
     w.template write<n>(x);
   }
 

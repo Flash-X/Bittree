@@ -158,8 +158,8 @@ namespace BitTree {
 
   template<unsigned D, class W>
   void MortonTree<D,W>::level_ids(int lev, int* ids) const {
-    ids[1] = this->level[lev].id1;
-    ids[0] = lev == 0 ? this->id0 : this->level[lev-1].id1; 
+    ids[1] = static_cast<int>( this->level[lev].id1 );
+    ids[0] = static_cast<int>( lev == 0 ? this->id0 : this->level[lev-1].id1 ); 
     return;
   }
 
@@ -412,7 +412,7 @@ namespace BitTree {
     DBG_ASSERT(mort_min <= mort_max);
 #endif
 
-    for (int i=0; i<levs; i++){
+    for (unsigned i=0; i<levs; i++){
       childrenDone[i] = false;
       pos[i] = 0;
     }

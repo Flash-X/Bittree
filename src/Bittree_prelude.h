@@ -25,9 +25,9 @@ namespace BitTree {
   template<size_t b, size_t x>
   struct Log {
                /** Recursive function to compute Log */
-               enum { val = 1 + Log<b,x/b>::val };
+               enum : unsigned { val = 1u + Log<b,x/b>::val };
              };
-  template<size_t b> struct Log<b,1> { enum { val = 0 }; };
-  template<size_t b> struct Log<b,0> { enum { val = 0 }; };
+  template<size_t b> struct Log<b,1> { enum { val = 0u }; };
+  template<size_t b> struct Log<b,0> { enum { val = 0u }; };
 }
 #endif
