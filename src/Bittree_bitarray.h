@@ -31,15 +31,15 @@ namespace BitTree {
     static const WType ones = ~WType(0);  /**< Maximum length string of binary 1s cast as WType */
   private:
     unsigned len;       /**< Length of Bit Array. Access with length() */
-    WType wbuf[1];          /**< Word buffer of type WType. Access with word_buf() */
-  private:
+    std::vector<WType> wbuf;          /**< Word buffer of type WType. Access with word_buf() */
+  public:
     BitArray(unsigned len): len(len) {}
   public:
-    static Ref<BitArray > make(unsigned n);
+    static std::shared_ptr<BitArray > make(unsigned n);
   public:
     unsigned length() const { return len; }
     unsigned word_count() const { return (len+bitw-1u)>>logw; }
-    WType* word_buf() { return wbuf; }
+    std::vector<WType> word_buf() { return wbuf; }
     
     bool get(unsigned ix) const;     /**< get value of bit ix */
     bool set(unsigned ix, bool x);   /**< set value of bit ix */
@@ -50,8 +50,8 @@ namespace BitTree {
     unsigned count() const;
     /** count 1's in either a or b */
     static unsigned count_xor(
-      const BitArray *a,
-      const BitArray *b,
+      const std::shared_ptr<BitArray> a,
+      const std::shared_ptr<BitArray> b,
       unsigned ix0, unsigned ix1
     );
     
@@ -65,11 +65,11 @@ namespace BitTree {
      *  Note: reading off the end is safe and returns 0 bits   */
     class Reader {
     protected:
-      BitArray *a;     /**< Bitarray the Reader is reading*/
+      std::shared_ptr<BitArray> a;     /**< Bitarray the Reader is reading*/
       WType w;
       unsigned ix;        /**< Current index of Reader */ 
     public:
-      Reader(const BitArray *host, unsigned ix0=0);   /**< Constructor */
+      Reader(const std::shared_ptr<BitArray> host, unsigned ix0=0);   /**< Constructor */
       unsigned index() const { return ix; }              /**< Return current index */
       template<unsigned n>
       WType read();                                          /**< Read n values */
@@ -83,7 +83,7 @@ namespace BitTree {
     private:
       using Reader::seek;
     public:
-      Writer(BitArray *host, unsigned ix0=0);       /**< Default constructor */
+      Writer(std::shared_ptr<BitArray> host, unsigned ix0=0);       /**< Default constructor */
       ~Writer();                                       
       template<unsigned n>
       void write(WType x);                                 /**< Write to array */
@@ -93,14 +93,13 @@ namespace BitTree {
 
   class FastBitArray {
     static const unsigned logc = 9, bitc = 1u<<logc;
-    Ref<BitArray > bitsref;
-    BitArray *bits;
+    std::shared_ptr<BitArray > bits;
     Ref<unsigned> chksref;
     unsigned *chks;
   public:
     FastBitArray(unsigned len);
     class Builder {
-      Ref<FastBitArray > ref;
+      std::shared_ptr<FastBitArray > ref;
       typename BitArray::Writer w;
       unsigned *pchk, chkpop;
     public:
@@ -108,10 +107,10 @@ namespace BitTree {
       unsigned index() const { return w.index(); }
       template<unsigned n>
       void write(WType x);
-      Ref<FastBitArray > finish();
+      std::shared_ptr<FastBitArray > finish();
     };
   public:
-    const BitArray* bit_array() const { return bits; }
+    std::shared_ptr<BitArray> bit_array() const { return bits; }
     unsigned length() const { return bits->length(); }
     bool get(unsigned ix) const { return bits->get(ix); }
     unsigned count(unsigned ix0, unsigned ix1) const;

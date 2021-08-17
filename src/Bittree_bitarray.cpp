@@ -4,16 +4,13 @@
 #include "Bittree_ref.h"
 
 namespace BitTree {
-  Ref<BitArray > BitArray::make(unsigned n) {
-    Ref<BitArray > ref;
+    std::shared_ptr<BitArray > BitArray::make(unsigned n) {
     unsigned nw = (n + bitw)>>logw; // one extra
-    Mem mem = {
-      alignof(BitArray),
-      sizeof(BitArray) + (nw-1)*sizeof(WType)
-    };
-    BitArray *it = new(ref.alloc(mem)) BitArray(n);
-    it->wbuf[nw-1] = WType(0);
-    return ref;
+
+    std::shared_ptr<BitArray> it = std::make_shared<BitArray>(n);
+    it->wbuf.resize(nw);
+
+    return it;
   }
 
   bool BitArray::get(unsigned ix) const {
@@ -80,8 +77,8 @@ namespace BitTree {
   }
 
   unsigned BitArray::count_xor(
-      const BitArray *a,
-      const BitArray *b,
+      const std::shared_ptr<BitArray> a,
+      const std::shared_ptr<BitArray> b,
       unsigned ix0, unsigned ix1
     ) {
     if(ix1 <= ix0) return 0;
@@ -141,8 +138,8 @@ namespace BitTree {
     }
   }
 
-  BitArray::Reader::Reader(const BitArray *a, unsigned ix0):
-    a(const_cast<BitArray*>(a)),
+  BitArray::Reader::Reader(std::shared_ptr<BitArray> a_in, unsigned ix0):
+    a(a_in),
     w( a->wbuf[0] ),
     ix(0) {
     this->seek(ix0);
@@ -151,11 +148,8 @@ namespace BitTree {
   template<unsigned n>
   WType BitArray::Reader::read() {
     unsigned n_ = n;
-    BitArray *a = this->a;
-    WType &w = this->w;
-    unsigned &ix = this->ix;
     WType ans;
-    if(((ix+n)&(bitw-1u)) > (ix&(bitw-1u)))
+    if(((ix+n_)&(bitw-1u)) > (ix&(bitw-1u)))
       ans = (w>>(ix&(bitw-1u))) & ((one<<n_)-1u);
     else {
       ans = w>>(ix&(bitw-1u));
@@ -171,7 +165,7 @@ namespace BitTree {
     this->ix = ix;
   }
 
-  BitArray::Writer::Writer(BitArray *host, unsigned ix0):
+  BitArray::Writer::Writer(std::shared_ptr<BitArray> host, unsigned ix0):
     BitArray::Reader(host, ix0) {
   }
   BitArray::Writer::~Writer() {
@@ -181,7 +175,6 @@ namespace BitTree {
   template<unsigned n>
   void BitArray::Writer::write(WType x) {
     unsigned n_ = n;
-    BitArray *a = this->a;
     WType &w = this->w;
     unsigned &ix = this->ix;
     DBG_ASSERT(ix + n <= a->length());
@@ -205,14 +198,13 @@ namespace BitTree {
   }
 
   FastBitArray::FastBitArray(unsigned len):
-    bitsref(BitArray::make(len)),
-    bits(bitsref),
+    bits(BitArray::make(len)),
     chksref(Ref_::new_array<unsigned>(len>>logc)),
     chks(chksref) {
   }
 
   FastBitArray::Builder::Builder(unsigned len):
-    ref(Ref_::new1<FastBitArray,unsigned>(len)),
+    ref(std::make_shared<FastBitArray>(len)),
     w(typename BitArray::Writer(ref->bits, 0)),
     pchk(ref->chks),
     chkpop(0) {
@@ -233,7 +225,7 @@ namespace BitTree {
     w.write<n>(x);
   }
 
-  Ref<FastBitArray > FastBitArray::Builder::finish() {
+  std::shared_ptr<FastBitArray > FastBitArray::Builder::finish() {
     w.flush();
     return ref;
   }

@@ -2,8 +2,6 @@
 
 using namespace BitTree;
 
-typedef unsigned W;
-
 
 /** Constructor for TheTree */
 TheTree::TheTree(const unsigned top[], const bool includes[]):
@@ -241,7 +239,7 @@ void TheTree::refine_reduce(MPI_Comm comm) {
   int count = static_cast<int>(refine_delta->word_count());
   MPI_Allreduce(
     MPI_IN_PLACE,
-    refine_delta->word_buf(),
+    refine_delta->word_buf().data(),
     count,
     MPI_UNSIGNED,
     MPI_BOR,
@@ -256,7 +254,7 @@ void TheTree::refine_reduce_and(MPI_Comm comm) {
   int count = static_cast<int>(refine_delta->word_count());
   MPI_Allreduce(
     MPI_IN_PLACE,
-    refine_delta->word_buf(),
+    refine_delta->word_buf().data(),
     count,
     MPI_UNSIGNED,
     MPI_BAND,
@@ -271,6 +269,11 @@ void TheTree::refine_update() {
   if (not is_reduced) {
     std::cout << "Bittree updating before reducing. Possible error." << std::endl;
   }
+  //std::cout << "refine_delta->length() = " << refine_delta->length() << std::endl;
+  //for (unsigned j=0; j<refine_delta->length() ; j++){
+  //  std::cout << j << ": " << refine_delta->get(j) << ";  " ;
+  //}
+  //std::cout << std::endl;
   tree_updated = tree->refine(refine_delta);
   is_updated = true;
 }
@@ -281,8 +284,8 @@ void TheTree::refine_apply() {
     refine_update();
   }
   tree = tree_updated;
-  refine_delta.nullify();
-  tree_updated.nullify();
+  refine_delta = nullptr;
+  tree_updated = nullptr;
   in_refine = false;
 }
 
@@ -346,9 +349,10 @@ extern "C" void bittree_init(
   unsigned top[3];
   for(int d=0; d < NDIM; d++)
     top[d] = static_cast<unsigned>(topsize[d]);
-  
-  Ref<TheTree > r; new(r.alloc()) TheTree(top, includes);
-  the_tree = r;
+ 
+  //std::shared_ptr<TheTree > r = std::make_shared<TheTree>(top, includes);
+  //Ref<TheTree > r; new(r.alloc()) TheTree(top, includes);
+  the_tree = std::make_shared<TheTree>(top,includes);
 }
 
 /** Wrapper function for block_count */

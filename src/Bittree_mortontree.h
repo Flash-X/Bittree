@@ -10,6 +10,10 @@
 #include <iostream>
 
 namespace BitTree {
+  struct LevelStruct {
+    unsigned id1; // exclusive upper bound on block ids for this level
+  };
+
   unsigned rect_coord_to_mort(const unsigned domain[NDIM], const unsigned coord[NDIM]);
   
   void rect_mort_to_coord(const unsigned domain[NDIM], unsigned mort, unsigned coord[NDIM]);
@@ -17,13 +21,12 @@ namespace BitTree {
   class MortonTree {
     unsigned levs;
     unsigned lev0_blks[NDIM];
-    Ref<FastBitArray > bits;
+    std::shared_ptr<FastBitArray > bits;
     unsigned id0; // id of first block
-    struct Level {
-      unsigned id1; // exclusive upper bound on block ids for this level
-    } level[1];/*[levs]*/
-  private:
+    std::vector<LevelStruct> level;
+  public:
     MortonTree() {}
+    ~MortonTree() {std::cout << "Calling MT destructor" << std::endl;}
   public:
     struct Block {
       unsigned id;
@@ -33,7 +36,7 @@ namespace BitTree {
       unsigned coord[NDIM];
     };
   public:
-    static Ref<MortonTree > make(
+    static std::shared_ptr<MortonTree > make(
       const unsigned blks[NDIM],
       const bool includes[]=0x0
     );
@@ -53,7 +56,7 @@ namespace BitTree {
     Block identify(unsigned lev, const unsigned coord[NDIM]) const;
     Block locate(unsigned id) const;
     
-    Ref<MortonTree > refine(Ref<BitArray > delta) const;
+    std::shared_ptr<MortonTree > refine(std::shared_ptr<BitArray > delta) const;
 
     void bitid_list(unsigned mort_min,unsigned mort_max, int *out ) const;
     void print_if_2d(unsigned datatype=0) const;

@@ -33,9 +33,9 @@ namespace { // private globals
   };
   
   class TheTree: public TheTree_ {
-    Ref<MortonTree > tree;               //Actual Bittree
-    Ref<MortonTree > tree_updated;       //Updated Bittree, before refinement is applied
-    Ref<BitArray > refine_delta;              //(De)refinement flags for blocks
+    std::shared_ptr<MortonTree > tree;               //Actual Bittree
+    std::shared_ptr<MortonTree > tree_updated;       //Updated Bittree, before refinement is applied
+    std::shared_ptr<BitArray > refine_delta;              //(De)refinement flags for blocks
     bool is_reduced;                             //Flag to track whether refine_delta is up to date across processors
     bool is_updated;                             //Flag to track whether tree_updated matches latest refine_delta
     bool in_refine;                              //If in_refine=false, tree_updated and refine_delta should not exist 
@@ -61,7 +61,7 @@ namespace { // private globals
     void print_2d(unsigned datatype=0);
   };
   
-  Ref<TheTree_> the_tree;
+  std::shared_ptr<TheTree_> the_tree;
 }
 
 /** Checks if the_tree has been created */

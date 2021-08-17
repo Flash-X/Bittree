@@ -78,16 +78,11 @@ namespace BitTree {
     }
   }
   
-  Ref<MortonTree > MortonTree::make(
+  std::shared_ptr<MortonTree > MortonTree::make(
       const unsigned size[NDIM],
       const bool includes[]
     ) {
-    Ref<MortonTree > ref;
-    Mem mem = {
-      alignof(MortonTree),
-      sizeof(MortonTree) + 0*sizeof(Level)
-    };
-    MortonTree *it = new(ref.alloc(mem)) MortonTree();
+    std::shared_ptr<MortonTree> it = std::make_shared<MortonTree>();
     
     unsigned blkpop = 1;
     for(unsigned d=0; d < NDIM; d++) {
@@ -113,8 +108,8 @@ namespace BitTree {
     }
     // ok bitarray done.  since there's only one level, we dont store any block bits
     it->bits = bldr.finish();
-    it->level[0].id1 = lev0_id1;
-    return ref;
+    it->level.push_back(LevelStruct{.id1 = lev0_id1});
+    return it;
   }
 
   unsigned MortonTree::levels() const {
@@ -180,8 +175,7 @@ namespace BitTree {
   MortonTree::identify(unsigned lev, const unsigned x[NDIM]) const {
     const unsigned levs = this->levs;
     const unsigned id0 = this->id0;
-    const FastBitArray *fast_bits = this->bits; // use this for counting
-    const BitArray *bits = fast_bits->bit_array(); // use this for bit access
+    const std::shared_ptr<BitArray> bits_a = bits->bit_array(); // use this for bit access
     Block ans;
     unsigned ix; // index of current block in current level
     { // top level=0
@@ -192,8 +186,8 @@ namespace BitTree {
         ans.coord[d] = unsigned(x0[d]);
       }
       ix = rect_coord_to_mort(lev0_blks, x0);
-      DBG_ASSERT(bits->get(ix));
-      ix = fast_bits->count(0, ix); // discount excluded blocks
+      DBG_ASSERT(bits_a->get(ix));
+      ix = bits->count(0, ix); // discount excluded blocks
     }
     ans.mort = 0;
     // bisection iteration
@@ -202,7 +196,7 @@ namespace BitTree {
       unsigned a_id = a_id0 + ix;
       ans.mort += ix;
       unsigned inside = 0u;
-      bool is_par = a_lev+1u < levs && bits->get(a_id);
+      bool is_par = a_lev+1u < levs && bits_a->get(a_id);
       if(is_par && a_lev < lev) { // if we're bisecting further
 #ifndef ALT_MORTON_ORDER
         ans.mort += 1;
@@ -275,7 +269,7 @@ namespace BitTree {
     ans.mort += ix;
     { // top level=0
       unsigned x0[NDIM];
-      ix = this->bits->find(0, ix); // account for excluded blocks
+      ix = bits->find(0, ix); // account for excluded blocks
       rect_mort_to_coord(lev0_blks, ix, x0);
       for(unsigned d=0; d < NDIM; d++)
         ans.coord[d] += unsigned(x0[d]) << ans.level;
@@ -283,15 +277,13 @@ namespace BitTree {
     return ans;
   }
 
-  Ref<MortonTree > MortonTree::refine(
-      Ref<BitArray > delta_
+  std::shared_ptr<MortonTree > MortonTree::refine(
+      std::shared_ptr<BitArray > delta_
     ) const {
-    using namespace std;
     
     const unsigned a_levs = this->levs;
-    const BitArray *a_bits = this->bits->bit_array();
+    const std::shared_ptr<BitArray> a_bits = this->bits->bit_array();
     const unsigned id0 = this->id0;
-    const BitArray *delta = delta_;
     
     // count the new number of levels, blocks, and bits
     unsigned b_id1 = this->level[0].id1;
@@ -300,7 +292,7 @@ namespace BitTree {
     for(unsigned lev=0; lev < a_levs; lev++) {
       unsigned lev_id0 = lev == 0 ? id0 : this->level[lev-1].id1;
       unsigned lev_id1 = this->level[lev].id1;
-      unsigned b_pars = BitArray::count_xor(a_bits, delta, lev_id0, lev_id1);
+      unsigned b_pars = BitArray::count_xor(a_bits, delta_, lev_id0, lev_id1);
       if(b_pars != 0) b_bitlen = b_id1;
       b_id1 += b_pars << NDIM;
       if(b_pars == 0) break;
@@ -308,22 +300,18 @@ namespace BitTree {
     }
     
     // new bit tree
-    Ref<MortonTree > b_ref_tree;
-    MortonTree *b_tree; {
-      Mem m = {
-        alignof(MortonTree),
-        sizeof(MortonTree) + (b_levs-1)*sizeof(Level)
-      };
-      b_tree = new(b_ref_tree.alloc(m)) MortonTree();
+    std::shared_ptr<MortonTree> b_tree = std::make_shared<MortonTree>();
+    {
       b_tree->levs = b_levs;
       b_tree->id0 = id0;
+      b_tree->level.resize(b_levs);
       for(unsigned d=0; d < NDIM; d++)
         b_tree->lev0_blks[d] = this->lev0_blks[d];
       // still must initialize b_tree->bits
     }
     
     // apply delta and insert/remove blocks
-    typename BitArray::Reader a_r(a_bits), del_r(delta, id0);
+    typename BitArray::Reader a_r(a_bits), del_r(delta_, id0);
     typename FastBitArray::Builder b_w(b_bitlen);
     
     // copy inclusion bits
@@ -338,7 +326,7 @@ namespace BitTree {
     }
     
     // readers of previous level
-    typename BitArray::Reader a_rp(a_bits, id0), del_rp(delta, id0);
+    typename BitArray::Reader a_rp(a_bits, id0), del_rp(delta_, id0);
 
     // do remaining levels
     unsigned lev = 1;
@@ -363,7 +351,8 @@ namespace BitTree {
     
     b_tree->level[b_levs-1].id1 = b_id1;
     b_tree->bits = b_w.finish();
-    return b_ref_tree;
+
+    return b_tree;
   }
 
   unsigned MortonTree::parents_before(unsigned lev, unsigned ix) const {

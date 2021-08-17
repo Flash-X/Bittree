@@ -11,6 +11,8 @@
 #include <cstdlib>
 #include <climits>
 #include <exception>
+#include <memory>
+#include <vector>
 #include <cstring>
 #include <iostream>
 
