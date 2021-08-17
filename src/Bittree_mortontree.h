@@ -5,19 +5,18 @@
 #include "Bittree_bitarray.h"
 #include "Bittree_ref.h"
 
+#include "Bittree_constants.h"
+
 #include <iostream>
 
 namespace BitTree {
-  template<unsigned D>
-  unsigned rect_coord_to_mort(const unsigned domain[D], const unsigned coord[D]);
+  unsigned rect_coord_to_mort(const unsigned domain[NDIM], const unsigned coord[NDIM]);
   
-  template<unsigned D>
-  void rect_mort_to_coord(const unsigned domain[D], unsigned mort, unsigned coord[D]);
+  void rect_mort_to_coord(const unsigned domain[NDIM], unsigned mort, unsigned coord[NDIM]);
   
-  template<unsigned D, class W>
   class MortonTree {
     unsigned levs;
-    unsigned lev0_blks[D];
+    unsigned lev0_blks[NDIM];
     Ref<FastBitArray > bits;
     unsigned id0; // id of first block
     struct Level {
@@ -32,11 +31,11 @@ namespace BitTree {
       unsigned mort;
       unsigned level;
       bool is_parent;
-      X coord[D];
+      X coord[NDIM];
     };
   public:
-    static Ref<MortonTree<D,W> > make(
-      const unsigned blks[D],
+    static Ref<MortonTree > make(
+      const unsigned blks[NDIM],
       const bool includes[]=0x0
     );
     unsigned levels() const;
@@ -52,13 +51,13 @@ namespace BitTree {
     unsigned block_level(unsigned id) const;
     
     template<class X>
-    bool inside(unsigned lev, const X coord[D]) const;
+    bool inside(unsigned lev, const X coord[NDIM]) const;
     template<class X>
-    Block<X> identify(unsigned lev, const X coord[D]) const;
+    Block<X> identify(unsigned lev, const X coord[NDIM]) const;
     template<class X>
     Block<X> locate(X id) const;
     
-    Ref<MortonTree<D,W> > refine(Ref<BitArray > delta) const;
+    Ref<MortonTree > refine(Ref<BitArray > delta) const;
 
     void bitid_list(unsigned mort_min,unsigned mort_max, int *out ) const;
     void print_if_2d(unsigned datatype=0) const;
@@ -68,6 +67,6 @@ namespace BitTree {
   };
 
   template<class W>
-  std::ostream& operator<<(std::ostream &o, const MortonTree<2,W> *x);
+  std::ostream& operator<<(std::ostream &o, const MortonTree *x);
 }
 #endif

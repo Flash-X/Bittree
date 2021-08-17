@@ -6,17 +6,15 @@ typedef unsigned W;
 
 
 /** Constructor for TheTree */
-template<unsigned ndim>
-TheTree<ndim>::TheTree(const unsigned top[], const bool includes[]):
-  tree(MortonTree<ndim,W>::make(top, includes)),
+TheTree::TheTree(const unsigned top[], const bool includes[]):
+  tree(MortonTree::make(top, includes)),
   is_reduced(false),
   is_updated(false),
   in_refine(false)  {
 }
 
 /** Check level count of Bittree. Wrapper for MortonTree's levels() */
-template<unsigned ndim>
-unsigned TheTree<ndim>::level_count(bool updated) {
+unsigned TheTree::level_count(bool updated) {
   if(updated && in_refine) {
     if (not is_updated) refine_update();
     return tree_updated->levels();
@@ -26,8 +24,7 @@ unsigned TheTree<ndim>::level_count(bool updated) {
 }
 
 /** Check block count of Bittree. Wrapper for MortonTree's blocks() */
-template<unsigned ndim>
-unsigned TheTree<ndim>::block_count(bool updated) {
+unsigned TheTree::block_count(bool updated) {
   if(updated && in_refine) {
     if (not is_updated) refine_update();
     return tree_updated->blocks();
@@ -37,8 +34,7 @@ unsigned TheTree<ndim>::block_count(bool updated) {
 }
 
 /** Check block count of Bittree. Wrapper for MortonTree's leaves() */
-template<unsigned ndim>
-unsigned TheTree<ndim>::leaf_count(bool updated) {
+unsigned TheTree::leaf_count(bool updated) {
   if(updated && in_refine) {
     if (not is_updated) refine_update();
     return tree_updated->leaves();
@@ -47,23 +43,20 @@ unsigned TheTree<ndim>::leaf_count(bool updated) {
     return tree->leaves();
 }
 /** Check number of blocks marked for nodetype change */
-template<unsigned ndim>
-unsigned TheTree<ndim>::delta_count() {
+unsigned TheTree::delta_count() {
   if(in_refine) return refine_delta->count();
   else return 0;
 }
 
 /** Check refinement bit. Wrapper for BitArray's get() */
-template<unsigned ndim>
-bool TheTree<ndim>::check_refine_bit(unsigned bitid) {
+bool TheTree::check_refine_bit(unsigned bitid) {
   if(in_refine) return bool(refine_delta->get(bitid));
   else return 0;
 }
 
 
 /** Wrapper for MortonTree's block_is_parent */ 
-template<unsigned ndim>
-bool TheTree<ndim>::is_parent(bool updated, unsigned bitid) {
+bool TheTree::is_parent(bool updated, unsigned bitid) {
   if (updated && in_refine){
     if (not is_updated) refine_update();
     return tree_updated->block_is_parent(bitid);
@@ -75,25 +68,24 @@ bool TheTree<ndim>::is_parent(bool updated, unsigned bitid) {
 /** Identify a block based on its integer coordinates and level of refinement. 
  *  If no block exists on the level specified, Return the block on the finest level
  *  possible. */
-template<unsigned ndim>
-void TheTree<ndim>::identify(
+void TheTree::identify(
     bool updated,        //in
     int *lev,            //inout (0-based)
     int *ijk,            //inout 
     int *mort,           //out
     int *bitid           //out
     ) {
-  unsigned coord[ndim];
-  for(unsigned d=0; d < ndim; d++)
+  unsigned coord[NDIM];
+  for(unsigned d=0; d < NDIM; d++)
     coord[d] = static_cast<unsigned>( ijk[d]);
   unsigned lev_u = static_cast<unsigned>(*lev);
 
   if(updated && in_refine) {
     if (not is_updated) refine_update();
     if(tree_updated->inside(lev_u, coord)) {
-      typename MortonTree<ndim,W>::template Block<unsigned> b = tree_updated->identify(lev_u, coord);
+      typename MortonTree::template Block<unsigned> b = tree_updated->identify(lev_u, coord);
       *lev = static_cast<int>(b.level);
-      for(unsigned d=0; d < ndim; d++)
+      for(unsigned d=0; d < NDIM; d++)
         ijk[d] = static_cast<int>(b.coord[d]);
       *mort = static_cast<int>(b.mort);
       *bitid = static_cast<int>(b.id);
@@ -106,9 +98,9 @@ void TheTree<ndim>::identify(
   }
   else {
     if(tree->inside(lev_u, coord)) {
-      typename MortonTree<ndim,W>::template Block<unsigned> b = tree->identify(lev_u, coord);
+      typename MortonTree::template Block<unsigned> b = tree->identify(lev_u, coord);
       *lev = static_cast<int>(b.level);
-      for(unsigned d=0; d < ndim; d++)
+      for(unsigned d=0; d < NDIM; d++)
         ijk[d] = static_cast<int>(b.coord[d]);
       *mort = static_cast<int>(b.mort);
       *bitid = static_cast<int>(b.id);
@@ -123,8 +115,7 @@ void TheTree<ndim>::identify(
 
 /** Return location information about a block based on its bitid number. (Location in Bittree) 
  *   */
-template<unsigned ndim>
-void TheTree<ndim>::locate(
+void TheTree::locate(
     bool updated,        //in
     unsigned bitid,           //in
     int *lev,            //out (0-based)
@@ -135,38 +126,37 @@ void TheTree<ndim>::locate(
   if(updated && in_refine) {
     if (not is_updated) refine_update();
     if(bitid < tree_updated->id_upper_bound() ) {
-      typename MortonTree<ndim,W>::template Block<unsigned> b = tree_updated->locate(bitid);
+      typename MortonTree::template Block<unsigned> b = tree_updated->locate(bitid);
       *lev = static_cast<int>(b.level);
-      for(unsigned d=0; d < ndim; d++)
+      for(unsigned d=0; d < NDIM; d++)
         ijk[d] = static_cast<int>(b.coord[d]);
       *mort = static_cast<int>(b.mort);
     }
     else {
       *lev = -1;
-      for(unsigned d=0; d < ndim; d++)
+      for(unsigned d=0; d < NDIM; d++)
         ijk[d] = -1;
       *mort = -1;
     }
   }
   else {
     if(bitid < tree->id_upper_bound() ) {
-      typename MortonTree<ndim,W>::template Block<unsigned> b = tree->locate(bitid);
+      typename MortonTree::template Block<unsigned> b = tree->locate(bitid);
       *lev = static_cast<int>(b.level);
-      for(unsigned d=0; d < ndim; d++)
+      for(unsigned d=0; d < NDIM; d++)
         ijk[d] = static_cast<int>( b.coord[d]);
       *mort = static_cast<int>(b.mort);
     }
     else {
       *lev = -1;
-      for(unsigned d=0; d < ndim; d++)
+      for(unsigned d=0; d < NDIM; d++)
         ijk[d] = -1;
       *mort = -1;
     }
   }
 }
 
-template<unsigned ndim>
-void TheTree<ndim>::get_id0(
+void TheTree::get_id0(
     bool updated,       //in
     int *out      //out
     ) {
@@ -179,8 +169,7 @@ void TheTree<ndim>::get_id0(
   }
 }
 
-template<unsigned ndim>
-void TheTree<ndim>::get_level_id_limits(
+void TheTree::get_level_id_limits(
     bool updated,   //in
     unsigned lev,        //in
     int *ids        //out
@@ -195,8 +184,7 @@ void TheTree<ndim>::get_level_id_limits(
 }
 
 /** Wrapper for MortonTree's bitid_list */
-template<unsigned ndim>
-void TheTree<ndim>::get_bitid_list(
+void TheTree::get_bitid_list(
     bool updated,       //in
     unsigned mort_min,  //in
     unsigned mort_max,  //in
@@ -227,8 +215,7 @@ void TheTree<ndim>::get_bitid_list(
 
 /** Creates refine_delta, and initializes all values to False.
   * First step of refinement. */
-template<unsigned ndim>
-void TheTree<ndim>::refine_init() {
+void TheTree::refine_init() {
   unsigned nbits = tree->id_upper_bound();
   refine_delta = BitArray::make(nbits);
   refine_delta->fill(false);
@@ -238,8 +225,7 @@ void TheTree<ndim>::refine_init() {
 }
 
 /** Mark a bit on refine_delta */
-template<unsigned ndim>
-void TheTree<ndim>::refine_mark(
+void TheTree::refine_mark(
     unsigned bitid,   // in
     bool value   // in
   ) {
@@ -251,8 +237,7 @@ void TheTree<ndim>::refine_mark(
 
 /** Reduce refine_delta across all processors by ORing. This means
  *  any blocks marked on one processor will be marked on all. */
-template<unsigned ndim>
-void TheTree<ndim>::refine_reduce(MPI_Comm comm) {
+void TheTree::refine_reduce(MPI_Comm comm) {
   int count = static_cast<int>(refine_delta->word_count());
   MPI_Allreduce(
     MPI_IN_PLACE,
@@ -267,8 +252,7 @@ void TheTree<ndim>::refine_reduce(MPI_Comm comm) {
 
 /** Reduce refine_delta across all processors by ANDing. This means
  *  any blocks unmarked on one processor will be unmarked on all. */
-template<unsigned ndim>
-void TheTree<ndim>::refine_reduce_and(MPI_Comm comm) {
+void TheTree::refine_reduce_and(MPI_Comm comm) {
   int count = static_cast<int>(refine_delta->word_count());
   MPI_Allreduce(
     MPI_IN_PLACE,
@@ -283,8 +267,7 @@ void TheTree<ndim>::refine_reduce_and(MPI_Comm comm) {
 
 /** Generates the updated tree from the original tree + refine_delta.
   * After call, both original and updated exist simultaneously. */
-template<unsigned ndim>
-void TheTree<ndim>::refine_update() {
+void TheTree::refine_update() {
   if (not is_reduced) {
     std::cout << "Bittree updating before reducing. Possible error." << std::endl;
   }
@@ -293,8 +276,7 @@ void TheTree<ndim>::refine_update() {
 }
 
 /** Makes the updated tree the original tree. Final step of refinement. */
-template<unsigned ndim>
-void TheTree<ndim>::refine_apply() {
+void TheTree::refine_apply() {
   if (not is_updated) {
     refine_update();
   }
@@ -309,9 +291,8 @@ void TheTree<ndim>::refine_apply() {
   * If tree has been updated, print both original and updated version. 
   * Can be passed a datatype to change what number prints at each block loc. 
   * (0=bitid, 1=morton number, 2=parentage) */
-template<unsigned ndim>
-void TheTree<ndim>::print_2d(unsigned datatype) {
-  if (ndim==2) { 
+void TheTree::print_2d(unsigned datatype) {
+  if (NDIM==2) { 
     switch (datatype) {
       case 0: 
         std::cout << "printing original tree (datatype=bitid): " <<std::endl;
@@ -347,7 +328,7 @@ void TheTree<ndim>::print_2d(unsigned datatype) {
     }
   }
   else {
-    std::cout << "Error: tried to print 2d Bittree but ndim is not 2!" <<std::endl;
+    std::cout << "Error: tried to print 2d Bittree but NDIM is not 2!" <<std::endl;
   }
 }
 
@@ -359,28 +340,15 @@ extern "C" bool bittree_initialized() {
 
 /** Essentially a wrapper for TheTree's constructor */
 extern "C" void bittree_init(
-    int *ndim,      // in
     int topsize[],  // in
     bool includes[] // in: includes[topsize[ndim-1]]...[topsize[0]]
   ) {
   unsigned top[3];
-  for(int d=0; d < *ndim; d++)
+  for(int d=0; d < NDIM; d++)
     top[d] = static_cast<unsigned>(topsize[d]);
   
-  switch(*ndim) {
-  case 1: {
-    Ref<TheTree<1> > r; new(r.alloc()) TheTree<1>(top, includes);
-    the_tree = r;
-    } break;
-  case 2: {
-    Ref<TheTree<2> > r; new(r.alloc()) TheTree<2>(top, includes);
-    the_tree = r;
-    } break;
-  case 3: {
-    Ref<TheTree<3> > r; new(r.alloc()) TheTree<3>(top, includes);
-    the_tree = r;
-    } break;
-  }
+  Ref<TheTree > r; new(r.alloc()) TheTree(top, includes);
+  the_tree = r;
 }
 
 /** Wrapper function for block_count */

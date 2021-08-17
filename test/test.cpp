@@ -58,12 +58,11 @@ namespace {
 class BittreeUnitTest : public testing::Test {
 protected:
     BittreeUnitTest(void) {
-      int ndim = NDIM;
       int nbase = CONCAT_NDIM(2,*3,*4);
       int top[NDIM] = {LIST_NDIM(2,3,4)};
       bool includes[nbase];
       for(int i=0; i<nbase; i++) includes[i] = true;
-      bittree_init(&ndim, top, includes);
+      bittree_init(top, includes);
     }
 
     ~BittreeUnitTest(void) {

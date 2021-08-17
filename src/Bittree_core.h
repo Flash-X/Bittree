@@ -9,8 +9,6 @@
 
 using namespace BitTree;
 
-typedef unsigned W;
-
 namespace { // private globals
   struct TheTree_ {
     virtual ~TheTree_() = default;
@@ -34,10 +32,9 @@ namespace { // private globals
     virtual void print_2d(unsigned datatype=0) = 0;
   };
   
-  template<unsigned ndim>
   class TheTree: public TheTree_ {
-    Ref<MortonTree<ndim,W> > tree;               //Actual Bittree
-    Ref<MortonTree<ndim,W> > tree_updated;       //Updated Bittree, before refinement is applied
+    Ref<MortonTree > tree;               //Actual Bittree
+    Ref<MortonTree > tree_updated;       //Updated Bittree, before refinement is applied
     Ref<BitArray > refine_delta;              //(De)refinement flags for blocks
     bool is_reduced;                             //Flag to track whether refine_delta is up to date across processors
     bool is_updated;                             //Flag to track whether tree_updated matches latest refine_delta
@@ -72,7 +69,6 @@ extern "C" bool bittree_initialized();
 
 /** Essentially a wrapper for TheTree's constructor */
 extern "C" void bittree_init(
-    int *ndim,      // in
     int topsize[],  // in
     bool includes[] // in: includes[topsize[ndim-1]]...[topsize[0]]
   );

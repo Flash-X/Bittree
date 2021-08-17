@@ -11,10 +11,9 @@
 #include <iostream>
 
 namespace BitTree {
-  template<unsigned D>
-  unsigned rect_coord_to_mort(const unsigned domain[D], const unsigned coord[D]) {
-    unsigned x[D], box[D];
-    for(unsigned d=0; d < D; d++) {
+  unsigned rect_coord_to_mort(const unsigned domain[NDIM], const unsigned coord[NDIM]) {
+    unsigned x[NDIM], box[NDIM];
+    for(unsigned d=0; d < NDIM; d++) {
       x[d] = coord[d];
       box[d] = domain[d];
     }
@@ -24,7 +23,7 @@ namespace BitTree {
       // find dim that can fit biggest pow2 strictly inside box
       unsigned max_pow2 = 0u;
       unsigned max_d;
-      for(unsigned d=0; d < D; d++) {
+      for(unsigned d=0; d < NDIM; d++) {
         unsigned p2 = glb_pow2(box[d]-1u);
         if(p2 >= max_pow2) {
           max_pow2 = p2;
@@ -37,7 +36,7 @@ namespace BitTree {
         box[max_d] = max_pow2;
       else {
         unsigned pop = 1u;
-        for(unsigned d=0; d < D; d++)
+        for(unsigned d=0; d < NDIM; d++)
           pop *= d == max_d ? max_pow2 : box[d];
         mort += pop;
         x[max_d] -= max_pow2;
@@ -46,10 +45,9 @@ namespace BitTree {
     }
   }
   
-  template<unsigned D>
-  void rect_mort_to_coord(const unsigned domain[D], unsigned mort, unsigned coord[D]) {
-    unsigned box[D];
-    for(unsigned d=0; d < D; d++) {
+  void rect_mort_to_coord(const unsigned domain[NDIM], unsigned mort, unsigned coord[NDIM]) {
+    unsigned box[NDIM];
+    for(unsigned d=0; d < NDIM; d++) {
       coord[d] = 0u;
       box[d] = domain[d];
     }
@@ -58,7 +56,7 @@ namespace BitTree {
       // find dim that can fit biggest pow2 strictly inside box
       unsigned max_pow2 = 0u;
       unsigned max_d;
-      for(unsigned d=0; d < D; d++) {
+      for(unsigned d=0; d < NDIM; d++) {
         unsigned p2 = glb_pow2(box[d]-1u);
         if(p2 >= max_pow2) {
           max_pow2 = p2;
@@ -68,7 +66,7 @@ namespace BitTree {
       if(max_pow2 == 0u)
         return; // the box is just one, we're done
       unsigned pop = 1u; // left sub-box population
-      for(unsigned d=0; d < D; d++)
+      for(unsigned d=0; d < NDIM; d++)
         pop *= d == max_d ? max_pow2 : box[d];
       if(mort < pop)
         box[max_d] = max_pow2;
@@ -80,20 +78,19 @@ namespace BitTree {
     }
   }
   
-  template<unsigned D, class W>
-  Ref<MortonTree<D,W> > MortonTree<D,W>::make(
-      const unsigned size[D],
+  Ref<MortonTree > MortonTree::make(
+      const unsigned size[NDIM],
       const bool includes[]
     ) {
-    Ref<MortonTree<D,W> > ref;
+    Ref<MortonTree > ref;
     Mem mem = {
-      alignof(MortonTree<D,W>),
-      sizeof(MortonTree<D,W>) + 0*sizeof(Level)
+      alignof(MortonTree),
+      sizeof(MortonTree) + 0*sizeof(Level)
     };
-    MortonTree<D,W> *it = new(ref.alloc(mem)) MortonTree<D,W>();
+    MortonTree *it = new(ref.alloc(mem)) MortonTree();
     
     unsigned blkpop = 1;
-    for(unsigned d=0; d < D; d++) {
+    for(unsigned d=0; d < NDIM; d++) {
       it->lev0_blks[d] = size[d];
       blkpop *= size[d];
     }
@@ -105,10 +102,10 @@ namespace BitTree {
     typename FastBitArray::Builder bldr(blkpop);
     // generate inclusion bits
     for(unsigned mort=0; mort < blkpop; mort++) {
-      unsigned x[D];
-      rect_mort_to_coord<D>(size, mort, x);
+      unsigned x[NDIM];
+      rect_mort_to_coord(size, mort, x);
       unsigned ix = 0;
-      for(unsigned d=D; d--;)
+      for(unsigned d=NDIM; d--;)
         ix = size[d]*ix + x[d];
       unsigned include = includes[ix] ? 1 : 0;
       lev0_id1 += include;
@@ -120,81 +117,69 @@ namespace BitTree {
     return ref;
   }
 
-  template<unsigned D, class W>
-  unsigned MortonTree<D,W>::levels() const {
+  unsigned MortonTree::levels() const {
     return this->levs;
   }
 
-  template<unsigned D, class W>
-  unsigned MortonTree<D,W>::blocks() const {
+  unsigned MortonTree::blocks() const {
     return this->level[this->levs-1].id1 - this->id0;
   }
 
-  template<unsigned D, class W>
-  unsigned MortonTree<D,W>::leaves() const {
+  unsigned MortonTree::leaves() const {
     unsigned pars = bits->count( this->id0, this->level[this->levs-1].id1) ;
     return this->blocks() - pars ;
   }
 
-  template<unsigned D, class W>
-  unsigned MortonTree<D,W>::top_size(unsigned dim) const {
+  unsigned MortonTree::top_size(unsigned dim) const {
     return this->lev0_blks[dim];
   }
   
-  template<unsigned D, class W>
-  unsigned MortonTree<D,W>::id_upper_bound() const {
+  unsigned MortonTree::id_upper_bound() const {
     return this->level[this->levs-1].id1;
   }
 
-  template<unsigned D, class W>
-  unsigned MortonTree<D,W>::level_id0(unsigned lev) const {
+  unsigned MortonTree::level_id0(unsigned lev) const {
     return lev == 0 ? this->id0 : this->level[lev-1].id1;
   }
 
-  template<unsigned D, class W>
-  unsigned MortonTree<D,W>::level_blocks(unsigned lev) const {
+  unsigned MortonTree::level_blocks(unsigned lev) const {
     return this->level[lev].id1 - (lev == 0 ? this->id0 : this->level[lev-1].id1);
   }
 
-  template<unsigned D, class W>
-  void MortonTree<D,W>::level_ids(unsigned lev, int* ids) const {
+  void MortonTree::level_ids(unsigned lev, int* ids) const {
     ids[1] = static_cast<int>( this->level[lev].id1 );
     ids[0] = static_cast<int>( lev == 0 ? this->id0 : this->level[lev-1].id1 ); 
     return;
   }
 
-  template<unsigned D, class W>
-  bool MortonTree<D,W>::block_is_parent(unsigned id) const {
+  bool MortonTree::block_is_parent(unsigned id) const {
     if(levs>1) return id < level[levs-2].id1 && bits->get(id);
     else return false;
   }
 
-  template<unsigned D, class W>
-  unsigned MortonTree<D,W>::block_level(unsigned id) const {
+  unsigned MortonTree::block_level(unsigned id) const {
     unsigned lev = 0;
     while(level[lev].id1 <= id)
       lev += 1;
     return lev;
   }
 
-  template<unsigned D, class W>
   template<class X>
-  bool MortonTree<D,W>::inside(unsigned lev, const X x[D]) const {
-    unsigned x0[D];
-    for(unsigned d=0; d < D; d++) {
+  bool MortonTree::inside(unsigned lev, const X x[NDIM]) const {
+    unsigned x0[NDIM];
+    for(unsigned d=0; d < NDIM; d++) {
       x0[d] = unsigned(x[d] >> lev);
       if(x0[d] >= lev0_blks[d])
         return false;
     }
-    return bits->get(rect_coord_to_mort<D>(lev0_blks, x0));
+    return bits->get(rect_coord_to_mort(lev0_blks, x0));
   }
   
   /** Identifies morton number of a block corresponding to given coords
    *  on the current tree.  */
-  template<unsigned D, class W>
   template<class X>
-  typename MortonTree<D,W>::template Block<X>
-  MortonTree<D,W>::identify(unsigned lev, const X x[D]) const {
+  typename MortonTree::template Block<X>
+  MortonTree::identify(unsigned lev, const X x[NDIM]) const {
     const unsigned levs = this->levs;
     const unsigned id0 = this->id0;
     const FastBitArray *fast_bits = this->bits; // use this for counting
@@ -202,13 +187,13 @@ namespace BitTree {
     Block<X> ans;
     unsigned ix; // index of current block in current level
     { // top level=0
-      unsigned x0[D];
-      for(unsigned d=0; d < D; d++) {
+      unsigned x0[NDIM];
+      for(unsigned d=0; d < NDIM; d++) {
         x0[d] = unsigned(x[d] >> lev); // coarsen x to top level
         DBG_ASSERT(x0[d] < lev0_blks[d]);
         ans.coord[d] = X(x0[d]);
       }
-      ix = rect_coord_to_mort<D>(lev0_blks, x0);
+      ix = rect_coord_to_mort(lev0_blks, x0);
       DBG_ASSERT(bits->get(ix));
       ix = fast_bits->count(0, ix); // discount excluded blocks
     }
@@ -224,14 +209,14 @@ namespace BitTree {
 #ifndef ALT_MORTON_ORDER
         ans.mort += 1;
 #endif
-        for(unsigned d=0; d < D; d++) {
+        for(unsigned d=0; d < NDIM; d++) {
           X xd = x[d] >> (lev-a_lev-1u);
           ans.coord[d] <<= 1;
           if(xd >= ans.coord[d]+1u) {
             ans.coord[d] += 1u;
             inside += 1u << d;
 #ifdef ALT_MORTON_ORDER
-            ans.mort += d == D-1 ? 1 : 0;
+            ans.mort += d == NDIM-1 ? 1 : 0;
 #endif
           }
         }
@@ -242,19 +227,18 @@ namespace BitTree {
         ans.level = a_lev;
         ans.is_parent = is_par;
 #ifdef ALT_MORTON_ORDER
-        if(is_par) inside = 1u<<(D-1); //include first half of children
+        if(is_par) inside = 1u<<(NDIM-1); //include first half of children
 #endif
       }
       unsigned parbef = this->parents_before(a_lev, ix);
-      ix = (parbef<<D) + inside;
+      ix = (parbef<<NDIM) + inside;
     }
     return ans;
   }
 
-  template<unsigned D, class W>
   template<class X>
-  typename MortonTree<D,W>::template Block<X>
-  MortonTree<D,W>::locate(X id) const {
+  typename MortonTree::template Block<X>
+  MortonTree::locate(X id) const {
     const unsigned id0 = this->id0;
     Block<X> ans;
     ans.id = id;
@@ -264,46 +248,45 @@ namespace BitTree {
     while(level[lev].id1 <= id)
       lev += 1;
     ans.level = lev;
-    for(unsigned d=0; d < D; d++)
+    for(unsigned d=0; d < NDIM; d++)
       ans.coord[d] = X(0u);
     // index on this level
     unsigned ix = id - (lev == 0 ? id0 : level[lev-1].id1);
     { // count children of all preceeding parents in morton index
       unsigned down = ix;
       for(unsigned lev1=lev; lev1 < levs; lev1++) {
-        down = this->parents_before(lev1, down) << D;
+        down = this->parents_before(lev1, down) << NDIM;
 #ifdef ALT_MORTON_ORDER
         if(lev1 == lev && ans.is_parent)
-          down += 1u<<(D-1);
+          down += 1u<<(NDIM-1);
 #endif
         ans.mort += down;
       }
     }
     // walk up the levels
     while(0 < lev) {
-      for(unsigned d=0; d < D; d++)
+      for(unsigned d=0; d < NDIM; d++)
         ans.coord[d] += X(ix>>d & 1u) << (ans.level-lev);
 #ifdef ALT_MORTON_ORDER
-      ans.mort += ix + (ix>>(D-1) & 1u);
+      ans.mort += ix + (ix>>(NDIM-1) & 1u);
 #else
       ans.mort += ix + 1;
 #endif
-      ix = this->parent_find(lev-1, ix>>D) - (lev-1==0 ? id0 : level[lev-2].id1);
+      ix = this->parent_find(lev-1, ix>>NDIM) - (lev-1==0 ? id0 : level[lev-2].id1);
       lev -= 1;
     }
     ans.mort += ix;
     { // top level=0
-      unsigned x0[D];
+      unsigned x0[NDIM];
       ix = this->bits->find(0, ix); // account for excluded blocks
-      rect_mort_to_coord<D>(lev0_blks, ix, x0);
-      for(unsigned d=0; d < D; d++)
+      rect_mort_to_coord(lev0_blks, ix, x0);
+      for(unsigned d=0; d < NDIM; d++)
         ans.coord[d] += X(x0[d]) << ans.level;
     }
     return ans;
   }
 
-  template<unsigned D, class W>
-  Ref<MortonTree<D,W> > MortonTree<D,W>::refine(
+  Ref<MortonTree > MortonTree::refine(
       Ref<BitArray > delta_
     ) const {
     using namespace std;
@@ -322,22 +305,22 @@ namespace BitTree {
       unsigned lev_id1 = this->level[lev].id1;
       unsigned b_pars = BitArray::count_xor(a_bits, delta, lev_id0, lev_id1);
       if(b_pars != 0) b_bitlen = b_id1;
-      b_id1 += b_pars << D;
+      b_id1 += b_pars << NDIM;
       if(b_pars == 0) break;
       b_levs += 1;
     }
     
     // new bit tree
-    Ref<MortonTree<D,W> > b_ref_tree;
-    MortonTree<D,W> *b_tree; {
+    Ref<MortonTree > b_ref_tree;
+    MortonTree *b_tree; {
       Mem m = {
-        alignof(MortonTree<D,W>),
-        sizeof(MortonTree<D,W>) + (b_levs-1)*sizeof(Level)
+        alignof(MortonTree),
+        sizeof(MortonTree) + (b_levs-1)*sizeof(Level)
       };
-      b_tree = new(b_ref_tree.alloc(m)) MortonTree<D,W>();
+      b_tree = new(b_ref_tree.alloc(m)) MortonTree();
       b_tree->levs = b_levs;
       b_tree->id0 = id0;
-      for(unsigned d=0; d < D; d++)
+      for(unsigned d=0; d < NDIM; d++)
         b_tree->lev0_blks[d] = this->lev0_blks[d];
       // still must initialize b_tree->bits
     }
@@ -366,14 +349,14 @@ namespace BitTree {
       if(a_rp.template read<1>()) { // it was a parent
         bool still_a_parent = !del_rp.template read<1>();
         // read kids, apply delta
-        WType b_kids = a_r.template read<(1<<D)>() ^ del_r.template read<(1<<D)>();
+        WType b_kids = a_r.template read<(1<<NDIM)>() ^ del_r.template read<(1<<NDIM)>();
         // if it became a leaf then we just dont write out the kids
         if(still_a_parent)
-          b_w.template write<(1<<D)>(b_kids);
+          b_w.template write<(1<<NDIM)>(b_kids);
       }
       else { // it was a leaf
         if(del_rp.template read<1>()) // and it became a parent!
-          b_w.template write<(1<<D)>(0);
+          b_w.template write<(1<<NDIM)>(0);
       }
       if(a_rp.index() == this->level[lev-1].id1 || b_w.index() == b_bitlen) {
         b_tree->level[lev].id1 = b_w.index();
@@ -386,21 +369,18 @@ namespace BitTree {
     return b_ref_tree;
   }
 
-  template<unsigned D, class W>
-  unsigned MortonTree<D,W>::parents_before(unsigned lev, unsigned ix) const {
+  unsigned MortonTree::parents_before(unsigned lev, unsigned ix) const {
     if(lev >= levs-1) return 0;
     unsigned id0 = lev == 0 ? this->id0 : level[lev-1].id1;
     return bits->count(id0, id0 + ix);
   }
 
-  template<unsigned D, class W>
-  unsigned MortonTree<D,W>::parent_find(unsigned lev, unsigned par_ix) const {
+  unsigned MortonTree::parent_find(unsigned lev, unsigned par_ix) const {
     unsigned id0 = lev == 0 ? this->id0 : level[lev-1].id1;
     return bits->find(id0, par_ix);
   }
 
-  template<unsigned D, class W>
-  void MortonTree<D,W>::bitid_list(unsigned mort_min, unsigned mort_max, int *out ) const {
+  void MortonTree::bitid_list(unsigned mort_min, unsigned mort_max, int *out ) const {
     bool is_par; 
     unsigned ix = this->id0;           //current scan index
     unsigned lev = 0;          //current scanning level
@@ -423,7 +403,7 @@ namespace BitTree {
 
       //if scanning a parent and children have not been scanned, move down a level
       if(is_par && !childrenDone[lev]) {
-        ix = this->level[lev].id1 + ((1u<<D) * this->parents_before(lev,pos[lev]));
+        ix = this->level[lev].id1 + ((1u<<NDIM) * this->parents_before(lev,pos[lev]));
         childrenDone[lev+1]=false;
        
 #ifndef ALT_MORTON_ORDER
@@ -442,14 +422,14 @@ namespace BitTree {
 
 #ifdef ALT_MORTON_ORDER
         //if middle child, store parent's bitid
-        if (lev>0 && (((pos[lev]+1) % (1u<<D)) == (1u<<(D-1))) ){
+        if (lev>0 && (((pos[lev]+1) % (1u<<NDIM)) == (1u<<(NDIM-1))) ){
           if(mort<mort_max && mort>=mort_min) out[mort-mort_min] = int(pos[lev-1] + this->level_id0(lev-1)) ;
           mort++;
         }
 #endif
 
         //if last child
-        if (lev>0 && (((pos[lev]+1) % (1u<<D)) == 0) ) {
+        if (lev>0 && (((pos[lev]+1) % (1u<<NDIM)) == 0) ) {
           pos[lev]++;
           childrenDone[lev-1] = true;
           ix = pos[lev-1] + this->level_id0(lev-1);
@@ -469,9 +449,8 @@ namespace BitTree {
     }
   }
 
-  template<unsigned D,class W>
-  void MortonTree<D,W>::print_if_2d(unsigned datatype) const {
-    DBG_ASSERT(D==2);
+  void MortonTree::print_if_2d(unsigned datatype) const {
+    DBG_ASSERT(NDIM==2);
     using namespace std;
     
     unsigned levs = this->levels();
@@ -482,8 +461,8 @@ namespace BitTree {
       for(ij[1]=0; ij[1] < this->top_size(1)<<lev; ij[1]++) {
         for(ij[0]=0; ij[0] < this->top_size(0)<<lev; ij[0]++) {
           if(this->inside(lev, ij)) {
-            typename MortonTree<D,W>::template Block<unsigned> b0 = this->template identify<unsigned>(lev, ij);
-            typename MortonTree<D,W>::template Block<unsigned> b1 = this->template locate<unsigned>(b0.id);
+            typename MortonTree::template Block<unsigned> b0 = this->template identify<unsigned>(lev, ij);
+            typename MortonTree::template Block<unsigned> b1 = this->template locate<unsigned>(b0.id);
             DBG_ASSERT(b0.id == b1.id);
             DBG_ASSERT(b0.level == b1.level);
             DBG_ASSERT(b0.mort == b1.mort);
@@ -508,8 +487,7 @@ namespace BitTree {
     }
   }
 
-  template<class W>
-  std::ostream& operator<<(std::ostream &o, const MortonTree<2,W> *x) {
+  std::ostream& operator<<(std::ostream &o, const MortonTree *x) {
     using namespace std;
     
     unsigned levs = x->levels();
@@ -519,12 +497,14 @@ namespace BitTree {
       for(ij[1]=0; ij[1] < x->top_size(1)<<lev; ij[1]++) {
         for(ij[0]=0; ij[0] < x->top_size(0)<<lev; ij[0]++) {
           if(x->inside(lev, ij)) {
-            typename MortonTree<2,W>::template Block<unsigned> b0 = x->template identify<unsigned>(lev, ij);
-            typename MortonTree<2,W>::template Block<unsigned> b1 = x->template locate<unsigned>(b0.id);
+            typename MortonTree::template Block<unsigned> b0 = x->template identify<unsigned>(lev, ij);
+            typename MortonTree::template Block<unsigned> b1 = x->template locate<unsigned>(b0.id);
             DBG_ASSERT(b0.id == b1.id);
             DBG_ASSERT(b0.level == b1.level);
             DBG_ASSERT(b0.mort == b1.mort);
-            DBG_ASSERT(b0.coord[0] == b1.coord[0] && b0.coord[1] == b1.coord[1]);
+            for(unsigned i=0; i<NDIM; ++i) {
+              DBG_ASSERT(b0.coord[i] == b1.coord[i]);
+            }
             o << std::setw(4) << b0.mort;
           }
           else
@@ -538,18 +518,9 @@ namespace BitTree {
 
 
   //explicit instantiation
-  template class MortonTree<1u,unsigned int>;
-  template class MortonTree<2u,unsigned int>;
-  template class MortonTree<3u,unsigned int>;
 
-  template bool MortonTree<1u,unsigned int>::inside(unsigned lev, const unsigned int x[1u]) const;
-  template bool MortonTree<2u,unsigned int>::inside(unsigned lev, const unsigned int x[2u]) const;
-  template bool MortonTree<3u,unsigned int>::inside(unsigned lev, const unsigned int x[3u]) const;
+  template bool MortonTree::inside(unsigned lev, const unsigned int x[NDIM]) const;
 
-  template MortonTree<1u, unsigned int>::Block<unsigned int> MortonTree<1u, unsigned int>::locate<unsigned int>(unsigned int) const;
-  template MortonTree<1u, unsigned int>::Block<unsigned int> MortonTree<1u, unsigned int>::identify<unsigned int>(unsigned int, unsigned int const*) const;
-  template MortonTree<2u, unsigned int>::Block<unsigned int> MortonTree<2u, unsigned int>::locate<unsigned int>(unsigned int) const;
-  template MortonTree<2u, unsigned int>::Block<unsigned int> MortonTree<2u, unsigned int>::identify<unsigned int>(unsigned int, unsigned int const*) const;
-  template MortonTree<3u, unsigned int>::Block<unsigned int> MortonTree<3u, unsigned int>::locate<unsigned int>(unsigned int) const;
-  template MortonTree<3u, unsigned int>::Block<unsigned int> MortonTree<3u, unsigned int>::identify<unsigned int>(unsigned int, unsigned int const*) const;
+  template MortonTree::Block<unsigned int> MortonTree::locate<unsigned int>(unsigned int) const;
+  template MortonTree::Block<unsigned int> MortonTree::identify<unsigned int>(unsigned int, unsigned int const*) const;
 }
