@@ -25,13 +25,12 @@ namespace BitTree {
   private:
     MortonTree() {}
   public:
-    template<class X>
     struct Block {
       unsigned id;
       unsigned mort;
       unsigned level;
       bool is_parent;
-      X coord[NDIM];
+      unsigned coord[NDIM];
     };
   public:
     static Ref<MortonTree > make(
@@ -50,12 +49,9 @@ namespace BitTree {
     bool block_is_parent(unsigned id) const;
     unsigned block_level(unsigned id) const;
     
-    template<class X>
-    bool inside(unsigned lev, const X coord[NDIM]) const;
-    template<class X>
-    Block<X> identify(unsigned lev, const X coord[NDIM]) const;
-    template<class X>
-    Block<X> locate(X id) const;
+    bool inside(unsigned lev, const unsigned coord[NDIM]) const;
+    Block identify(unsigned lev, const unsigned coord[NDIM]) const;
+    Block locate(unsigned id) const;
     
     Ref<MortonTree > refine(Ref<BitArray > delta) const;
 
@@ -66,7 +62,6 @@ namespace BitTree {
     unsigned parent_find(unsigned lev, unsigned par_ix) const;
   };
 
-  template<class W>
   std::ostream& operator<<(std::ostream &o, const MortonTree *x);
 }
 #endif

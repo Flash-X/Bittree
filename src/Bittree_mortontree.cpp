@@ -109,7 +109,7 @@ namespace BitTree {
         ix = size[d]*ix + x[d];
       unsigned include = includes[ix] ? 1 : 0;
       lev0_id1 += include;
-      bldr.template write<1>(include);
+      bldr.write<1>(include);
     }
     // ok bitarray done.  since there's only one level, we dont store any block bits
     it->bits = bldr.finish();
@@ -164,11 +164,10 @@ namespace BitTree {
     return lev;
   }
 
-  template<class X>
-  bool MortonTree::inside(unsigned lev, const X x[NDIM]) const {
+  bool MortonTree::inside(unsigned lev, const unsigned x[NDIM]) const {
     unsigned x0[NDIM];
     for(unsigned d=0; d < NDIM; d++) {
-      x0[d] = unsigned(x[d] >> lev);
+      x0[d] = x[d] >> lev;
       if(x0[d] >= lev0_blks[d])
         return false;
     }
@@ -177,21 +176,20 @@ namespace BitTree {
   
   /** Identifies morton number of a block corresponding to given coords
    *  on the current tree.  */
-  template<class X>
-  typename MortonTree::template Block<X>
-  MortonTree::identify(unsigned lev, const X x[NDIM]) const {
+  MortonTree::Block
+  MortonTree::identify(unsigned lev, const unsigned x[NDIM]) const {
     const unsigned levs = this->levs;
     const unsigned id0 = this->id0;
     const FastBitArray *fast_bits = this->bits; // use this for counting
     const BitArray *bits = fast_bits->bit_array(); // use this for bit access
-    Block<X> ans;
+    Block ans;
     unsigned ix; // index of current block in current level
     { // top level=0
       unsigned x0[NDIM];
       for(unsigned d=0; d < NDIM; d++) {
         x0[d] = unsigned(x[d] >> lev); // coarsen x to top level
         DBG_ASSERT(x0[d] < lev0_blks[d]);
-        ans.coord[d] = X(x0[d]);
+        ans.coord[d] = unsigned(x0[d]);
       }
       ix = rect_coord_to_mort(lev0_blks, x0);
       DBG_ASSERT(bits->get(ix));
@@ -210,7 +208,7 @@ namespace BitTree {
         ans.mort += 1;
 #endif
         for(unsigned d=0; d < NDIM; d++) {
-          X xd = x[d] >> (lev-a_lev-1u);
+          unsigned xd = x[d] >> (lev-a_lev-1u);
           ans.coord[d] <<= 1;
           if(xd >= ans.coord[d]+1u) {
             ans.coord[d] += 1u;
@@ -236,11 +234,10 @@ namespace BitTree {
     return ans;
   }
 
-  template<class X>
-  typename MortonTree::template Block<X>
-  MortonTree::locate(X id) const {
+  MortonTree::Block
+  MortonTree::locate(unsigned id) const {
     const unsigned id0 = this->id0;
-    Block<X> ans;
+    Block ans;
     ans.id = id;
     ans.mort = 0;
     ans.is_parent = this->block_is_parent(id);
@@ -249,7 +246,7 @@ namespace BitTree {
       lev += 1;
     ans.level = lev;
     for(unsigned d=0; d < NDIM; d++)
-      ans.coord[d] = X(0u);
+      ans.coord[d] = unsigned(0u);
     // index on this level
     unsigned ix = id - (lev == 0 ? id0 : level[lev-1].id1);
     { // count children of all preceeding parents in morton index
@@ -266,7 +263,7 @@ namespace BitTree {
     // walk up the levels
     while(0 < lev) {
       for(unsigned d=0; d < NDIM; d++)
-        ans.coord[d] += X(ix>>d & 1u) << (ans.level-lev);
+        ans.coord[d] += unsigned(ix>>d & 1u) << (ans.level-lev);
 #ifdef ALT_MORTON_ORDER
       ans.mort += ix + (ix>>(NDIM-1) & 1u);
 #else
@@ -281,7 +278,7 @@ namespace BitTree {
       ix = this->bits->find(0, ix); // account for excluded blocks
       rect_mort_to_coord(lev0_blks, ix, x0);
       for(unsigned d=0; d < NDIM; d++)
-        ans.coord[d] += X(x0[d]) << ans.level;
+        ans.coord[d] += unsigned(x0[d]) << ans.level;
     }
     return ans;
   }
@@ -331,13 +328,13 @@ namespace BitTree {
     
     // copy inclusion bits
     while(a_r.index() < id0)
-      b_w.template write<1>(a_r.template read<1>());
+      b_w.write<1>(a_r.read<1>());
     
     // do level 0...
     b_tree->level[0].id1 = this->level[0].id1;
     while(b_w.index() < b_bitlen && a_r.index() < this->level[0].id1) {
       // apply delta
-      b_w.template write<1>(a_r.template read<1>() ^ del_r.template read<1>());
+      b_w.write<1>(a_r.read<1>() ^ del_r.read<1>());
     }
     
     // readers of previous level
@@ -346,17 +343,17 @@ namespace BitTree {
     // do remaining levels
     unsigned lev = 1;
     while(b_w.index() < b_bitlen) {
-      if(a_rp.template read<1>()) { // it was a parent
-        bool still_a_parent = !del_rp.template read<1>();
+      if(a_rp.read<1>()) { // it was a parent
+        bool still_a_parent = !del_rp.read<1>();
         // read kids, apply delta
-        WType b_kids = a_r.template read<(1<<NDIM)>() ^ del_r.template read<(1<<NDIM)>();
+        WType b_kids = a_r.read<(1<<NDIM)>() ^ del_r.read<(1<<NDIM)>();
         // if it became a leaf then we just dont write out the kids
         if(still_a_parent)
-          b_w.template write<(1<<NDIM)>(b_kids);
+          b_w.write<(1<<NDIM)>(b_kids);
       }
       else { // it was a leaf
-        if(del_rp.template read<1>()) // and it became a parent!
-          b_w.template write<(1<<NDIM)>(0);
+        if(del_rp.read<1>()) // and it became a parent!
+          b_w.write<(1<<NDIM)>(0);
       }
       if(a_rp.index() == this->level[lev-1].id1 || b_w.index() == b_bitlen) {
         b_tree->level[lev].id1 = b_w.index();
@@ -461,8 +458,8 @@ namespace BitTree {
       for(ij[1]=0; ij[1] < this->top_size(1)<<lev; ij[1]++) {
         for(ij[0]=0; ij[0] < this->top_size(0)<<lev; ij[0]++) {
           if(this->inside(lev, ij)) {
-            typename MortonTree::template Block<unsigned> b0 = this->template identify<unsigned>(lev, ij);
-            typename MortonTree::template Block<unsigned> b1 = this->template locate<unsigned>(b0.id);
+            MortonTree::Block b0 = this->identify(lev, ij);
+            MortonTree::Block b1 = this->locate(b0.id);
             DBG_ASSERT(b0.id == b1.id);
             DBG_ASSERT(b0.level == b1.level);
             DBG_ASSERT(b0.mort == b1.mort);
@@ -497,8 +494,8 @@ namespace BitTree {
       for(ij[1]=0; ij[1] < x->top_size(1)<<lev; ij[1]++) {
         for(ij[0]=0; ij[0] < x->top_size(0)<<lev; ij[0]++) {
           if(x->inside(lev, ij)) {
-            typename MortonTree::template Block<unsigned> b0 = x->template identify<unsigned>(lev, ij);
-            typename MortonTree::template Block<unsigned> b1 = x->template locate<unsigned>(b0.id);
+            MortonTree::Block b0 = x->identify(lev, ij);
+            MortonTree::Block b1 = x->locate(b0.id);
             DBG_ASSERT(b0.id == b1.id);
             DBG_ASSERT(b0.level == b1.level);
             DBG_ASSERT(b0.mort == b1.mort);
@@ -515,12 +512,4 @@ namespace BitTree {
     }
     return o;
   }
-
-
-  //explicit instantiation
-
-  template bool MortonTree::inside(unsigned lev, const unsigned int x[NDIM]) const;
-
-  template MortonTree::Block<unsigned int> MortonTree::locate<unsigned int>(unsigned int) const;
-  template MortonTree::Block<unsigned int> MortonTree::identify<unsigned int>(unsigned int, unsigned int const*) const;
 }

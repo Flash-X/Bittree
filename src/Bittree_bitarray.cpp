@@ -230,7 +230,7 @@ namespace BitTree {
       }
     }
     chkpop += n == 1 ? x : static_cast<unsigned>(bitpop(x));
-    w.template write<n>(x);
+    w.write<n>(x);
   }
 
   Ref<FastBitArray > FastBitArray::Builder::finish() {
