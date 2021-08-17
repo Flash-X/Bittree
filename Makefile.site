@@ -18,11 +18,6 @@ CXXFLAGS_DEBUG = -g -O0 \
 -Wall -Wextra -pedantic -Wconversion\
 -Wno-vla-extension \
 -Werror
-#TODO fix compilation errors caused by:
-#  -Wsign-conversion
-#  -Wdelete-non-abstract-non-virtual-dtor
-#  -Wsign-compare
-#  -Wvla-extension (probably can ignore)
 
 LDFLAGS_STD = -lstdc++
 

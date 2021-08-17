@@ -1,3 +1,10 @@
+2021-08-17
+==========
+
+- Added rigorous warning flags for debug mode. Debug mode is used for test suite.
+- Fixed various sign conversion and comparison errors throughout the code.
+- Making most of the source code consistent in using unsigned int for all appropriate variables.
+
 2021-08-14
 ==========
 
