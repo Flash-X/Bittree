@@ -16,8 +16,6 @@ CXXFLAGS_PROD = -g -O0
 
 CXXFLAGS_DEBUG = -g -O0 \
 -Wall -Wextra -pedantic -Wconversion\
--Wno-sign-conversion \
--Wno-sign-compare  \
 -Wno-vla-extension \
 -Werror
 #TODO fix compilation errors caused by:

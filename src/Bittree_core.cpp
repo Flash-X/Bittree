@@ -55,7 +55,7 @@ unsigned TheTree<ndim>::delta_count() {
 
 /** Check refinement bit. Wrapper for BitArray's get() */
 template<unsigned ndim>
-bool TheTree<ndim>::check_refine_bit(int bitid) {
+bool TheTree<ndim>::check_refine_bit(unsigned bitid) {
   if(in_refine) return bool(refine_delta->get(bitid));
   else return 0;
 }
@@ -63,7 +63,7 @@ bool TheTree<ndim>::check_refine_bit(int bitid) {
 
 /** Wrapper for MortonTree's block_is_parent */ 
 template<unsigned ndim>
-bool TheTree<ndim>::is_parent(bool updated, int bitid) {
+bool TheTree<ndim>::is_parent(bool updated, unsigned bitid) {
   if (updated && in_refine){
     if (not is_updated) refine_update();
     return tree_updated->block_is_parent(bitid);
@@ -85,17 +85,18 @@ void TheTree<ndim>::identify(
     ) {
   unsigned coord[ndim];
   for(unsigned d=0; d < ndim; d++)
-    coord[d] = ijk[d];
+    coord[d] = static_cast<unsigned>( ijk[d]);
+  unsigned lev_u = static_cast<unsigned>(*lev);
 
   if(updated && in_refine) {
     if (not is_updated) refine_update();
-    if(tree_updated->inside(*lev, coord)) {
-      typename MortonTree<ndim,W>::template Block<unsigned> b = tree_updated->identify(*lev, coord);
-      *lev = b.level;
+    if(tree_updated->inside(lev_u, coord)) {
+      typename MortonTree<ndim,W>::template Block<unsigned> b = tree_updated->identify(lev_u, coord);
+      *lev = static_cast<int>(b.level);
       for(unsigned d=0; d < ndim; d++)
-        ijk[d] = b.coord[d];
-      *mort = b.mort;
-      *bitid = b.id;
+        ijk[d] = static_cast<int>(b.coord[d]);
+      *mort = static_cast<int>(b.mort);
+      *bitid = static_cast<int>(b.id);
     }
     else {
       *lev = -1;
@@ -104,13 +105,13 @@ void TheTree<ndim>::identify(
     }
   }
   else {
-    if(tree->inside(*lev, coord)) {
-      typename MortonTree<ndim,W>::template Block<unsigned> b = tree->identify(*lev, coord);
-      *lev = b.level;
+    if(tree->inside(lev_u, coord)) {
+      typename MortonTree<ndim,W>::template Block<unsigned> b = tree->identify(lev_u, coord);
+      *lev = static_cast<int>(b.level);
       for(unsigned d=0; d < ndim; d++)
-        ijk[d] = b.coord[d];
-      *mort = b.mort;
-      *bitid = b.id;
+        ijk[d] = static_cast<int>(b.coord[d]);
+      *mort = static_cast<int>(b.mort);
+      *bitid = static_cast<int>(b.id);
     }
     else {
       *lev = -1;
@@ -125,7 +126,7 @@ void TheTree<ndim>::identify(
 template<unsigned ndim>
 void TheTree<ndim>::locate(
     bool updated,        //in
-    int bitid,           //in
+    unsigned bitid,           //in
     int *lev,            //out (0-based)
     int *ijk,            //out
     int *mort            //out
@@ -134,11 +135,11 @@ void TheTree<ndim>::locate(
   if(updated && in_refine) {
     if (not is_updated) refine_update();
     if(bitid < tree_updated->id_upper_bound() ) {
-      typename MortonTree<ndim,W>::template Block<unsigned> b = tree_updated->locate(unsigned(bitid));
-      *lev = b.level;
+      typename MortonTree<ndim,W>::template Block<unsigned> b = tree_updated->locate(bitid);
+      *lev = static_cast<int>(b.level);
       for(unsigned d=0; d < ndim; d++)
-        ijk[d] = b.coord[d];
-      *mort = b.mort;
+        ijk[d] = static_cast<int>(b.coord[d]);
+      *mort = static_cast<int>(b.mort);
     }
     else {
       *lev = -1;
@@ -149,11 +150,11 @@ void TheTree<ndim>::locate(
   }
   else {
     if(bitid < tree->id_upper_bound() ) {
-      typename MortonTree<ndim,W>::template Block<unsigned> b = tree->locate(unsigned(bitid));
-      *lev = b.level;
+      typename MortonTree<ndim,W>::template Block<unsigned> b = tree->locate(bitid);
+      *lev = static_cast<int>(b.level);
       for(unsigned d=0; d < ndim; d++)
-        ijk[d] = b.coord[d];
-      *mort = b.mort;
+        ijk[d] = static_cast<int>( b.coord[d]);
+      *mort = static_cast<int>(b.mort);
     }
     else {
       *lev = -1;
@@ -171,17 +172,17 @@ void TheTree<ndim>::get_id0(
     ) {
   if(updated && in_refine){
     if(not is_updated) refine_update();
-    out[0] = tree_updated->level_id0(0);
+    out[0] = static_cast<int>(tree_updated->level_id0(0));
   }
   else{
-    out[0] = tree->level_id0(0);
+    out[0] = static_cast<int>(tree->level_id0(0));
   }
 }
 
 template<unsigned ndim>
 void TheTree<ndim>::get_level_id_limits(
     bool updated,   //in
-    int lev,        //in
+    unsigned lev,        //in
     int *ids        //out
     ) {
   if(updated && in_refine){
@@ -197,8 +198,8 @@ void TheTree<ndim>::get_level_id_limits(
 template<unsigned ndim>
 void TheTree<ndim>::get_bitid_list(
     bool updated,       //in
-    int mort_min,  //in
-    int mort_max,  //in
+    unsigned mort_min,  //in
+    unsigned mort_max,  //in
     int *out      //out
     ) {
 #ifndef BITTREE_SAFE
@@ -218,7 +219,7 @@ void TheTree<ndim>::get_bitid_list(
   else{
     tree->bitid_list(mort_min, mort_max, outlist);
   }
-  for (int i=0;i<(mort_max - mort_min);i++)
+  for (unsigned i=0;i<(mort_max - mort_min);i++)
     out[i] = outlist[i];
 #endif
 }
@@ -239,7 +240,7 @@ void TheTree<ndim>::refine_init() {
 /** Mark a bit on refine_delta */
 template<unsigned ndim>
 void TheTree<ndim>::refine_mark(
-    int bitid,   // in
+    unsigned bitid,   // in
     bool value   // in
   ) {
   refine_delta->set(bitid, value);
@@ -252,10 +253,11 @@ void TheTree<ndim>::refine_mark(
  *  any blocks marked on one processor will be marked on all. */
 template<unsigned ndim>
 void TheTree<ndim>::refine_reduce(MPI_Comm comm) {
+  int count = static_cast<int>(refine_delta->word_count());
   MPI_Allreduce(
     MPI_IN_PLACE,
     refine_delta->word_buf(),
-    refine_delta->word_count(),
+    count,
     MPI_UNSIGNED,
     MPI_BOR,
     comm
@@ -267,10 +269,11 @@ void TheTree<ndim>::refine_reduce(MPI_Comm comm) {
  *  any blocks unmarked on one processor will be unmarked on all. */
 template<unsigned ndim>
 void TheTree<ndim>::refine_reduce_and(MPI_Comm comm) {
+  int count = static_cast<int>(refine_delta->word_count());
   MPI_Allreduce(
     MPI_IN_PLACE,
     refine_delta->word_buf(),
-    refine_delta->word_count(),
+    count,
     MPI_UNSIGNED,
     MPI_BAND,
     comm
@@ -307,7 +310,7 @@ void TheTree<ndim>::refine_apply() {
   * Can be passed a datatype to change what number prints at each block loc. 
   * (0=bitid, 1=morton number, 2=parentage) */
 template<unsigned ndim>
-void TheTree<ndim>::print_2d(int datatype) {
+void TheTree<ndim>::print_2d(unsigned datatype) {
   if (ndim==2) { 
     switch (datatype) {
       case 0: 
@@ -323,7 +326,7 @@ void TheTree<ndim>::print_2d(int datatype) {
     tree->print_if_2d(datatype);
     if(in_refine) {
     std::cout << "printing refine_delta (indexed by bitid):" <<std::endl;
-    for (int j=0; j<refine_delta->length() ; j++){
+    for (unsigned j=0; j<refine_delta->length() ; j++){
       std::cout << j << ": " << refine_delta->get(j) << ";  " ;
     }
     }
@@ -361,8 +364,8 @@ extern "C" void bittree_init(
     bool includes[] // in: includes[topsize[ndim-1]]...[topsize[0]]
   ) {
   unsigned top[3];
-  for(unsigned d=0; d < *ndim; d++)
-    top[d] = topsize[d];
+  for(int d=0; d < *ndim; d++)
+    top[d] = static_cast<unsigned>(topsize[d]);
   
   switch(*ndim) {
   case 1: {
@@ -386,7 +389,7 @@ extern "C" void bittree_level_count(
     int *count         //out
   ) {
   if(!!the_tree)
-    *count = the_tree->level_count(*updated);
+    *count = static_cast<int>(the_tree->level_count(*updated));
 }
 
 
@@ -396,7 +399,7 @@ extern "C" void bittree_block_count(
     int *count         //out
   ) {
   if(!!the_tree)
-    *count = the_tree->block_count(*updated);
+    *count = static_cast<int>(the_tree->block_count(*updated));
 }
 
 
@@ -406,7 +409,7 @@ extern "C" void bittree_leaf_count(
     int *count         //out
   ) {
   if(!!the_tree)
-    *count = the_tree->leaf_count(*updated);
+    *count = static_cast<int>(the_tree->leaf_count(*updated));
 }
 
 /** Wrapper function for delta_count */
@@ -414,7 +417,7 @@ extern "C" void bittree_delta_count(
     int *count         //out
   ) {
   if(!!the_tree)
-    *count = the_tree->delta_count();
+    *count = static_cast<int>(the_tree->delta_count());
 }
 
 
@@ -423,8 +426,9 @@ extern "C" void bittree_check_refine_bit(
     const int *bitid,   //in
     bool *bit_check     //out
   ) {
+  unsigned bitid_u  = static_cast<unsigned>(*bitid);
   if(!!the_tree)
-    *bit_check = the_tree->check_refine_bit(*bitid);
+    *bit_check = the_tree->check_refine_bit(bitid_u);
 }
 
 /** Wrapper function for is_parent */
@@ -433,8 +437,9 @@ extern "C" void bittree_is_parent(
     int *bitid,         //in
     bool *parent_check  //out
   ) {
+  unsigned bitid_u  = static_cast<unsigned>(*bitid);
   if(!!the_tree)
-    *parent_check = the_tree->is_parent(*updated,*bitid);
+    *parent_check = the_tree->is_parent(*updated,bitid_u);
 }
 
 /** Wrapper function for TheTree's identify, which 
@@ -459,8 +464,9 @@ extern "C" void bittree_locate(
     int *ijk,           //out
     int *mort          //out
   ) {
+  unsigned bitid_u  = static_cast<unsigned>(*bitid);
   if(!!the_tree)
-    the_tree->locate(*updated, *bitid, lev, ijk, mort);
+    the_tree->locate(*updated, bitid_u, lev, ijk, mort);
 }
 
 /** Wrapper function for TheTree's get_id0 */
@@ -478,8 +484,9 @@ extern "C" void bittree_level_bitid_limits(
     int *lev,      //in
     int *ids       //out
   ) {
+  unsigned lev_u  = static_cast<unsigned>(*lev);
   if(!!the_tree)
-    the_tree->get_level_id_limits(*updated, *lev, ids);
+    the_tree->get_level_id_limits(*updated, lev_u, ids);
 }
 
 /** Wrapper function for TheTree's get_bitid_list, which 
@@ -490,8 +497,10 @@ extern "C" void bittree_get_bitid_list(
     int *mort_max,      //in, 0-based
     int *idout          //out
   ) {
+  unsigned mort_min_u  = static_cast<unsigned>(*mort_min);
+  unsigned mort_max_u  = static_cast<unsigned>(*mort_max);
   if(!!the_tree)
-    the_tree->get_bitid_list(*updated, *mort_min, *mort_max, idout);
+    the_tree->get_bitid_list(*updated, mort_min_u, mort_max_u, idout);
 }
 
 /** Wrapper function for refine_init */
@@ -505,8 +514,9 @@ extern "C" void bittree_refine_mark(
     int *bitid,        // in
     bool *value        // in
   ) {
+  unsigned bitid_u  = static_cast<unsigned>(*bitid);
   if(!!the_tree)
-    the_tree->refine_mark(*bitid, *value);
+    the_tree->refine_mark(bitid_u, *value);
 }
 
 /** Wrapper function for refine_reduce */
@@ -540,8 +550,9 @@ extern "C" void bittree_refine_apply() {
 /** Wrapper function the print_2d */
 extern "C" void bittree_print_2d(int *datatype)
 {
+  unsigned dtype_u = static_cast<unsigned>(*datatype);
   if(!!the_tree)
-    the_tree->print_2d(*datatype) ;
+    the_tree->print_2d(dtype_u) ;
 }
 
 #if 0

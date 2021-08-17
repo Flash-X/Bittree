@@ -1,8 +1,8 @@
 #!/bin/bash
 
-python setup.py test -d 1 --build build_1d
-python setup.py test -d 2 --build build_2d
-python setup.py test -d 3 --build build_3d
+python setup.py test -d 1 --build build_1d --debug
+python setup.py test -d 2 --build build_2d --debug
+python setup.py test -d 3 --build build_3d --debug
 
 cd build_1d
 make

@@ -157,7 +157,7 @@ namespace BitTree {
   }
 
   template<unsigned D, class W>
-  void MortonTree<D,W>::level_ids(int lev, int* ids) const {
+  void MortonTree<D,W>::level_ids(unsigned lev, int* ids) const {
     ids[1] = static_cast<int>( this->level[lev].id1 );
     ids[0] = static_cast<int>( lev == 0 ? this->id0 : this->level[lev-1].id1 ); 
     return;
@@ -400,13 +400,13 @@ namespace BitTree {
   }
 
   template<unsigned D, class W>
-  void MortonTree<D,W>::bitid_list(int mort_min, int mort_max, int *out ) const {
+  void MortonTree<D,W>::bitid_list(unsigned mort_min, unsigned mort_max, int *out ) const {
     bool is_par; 
     unsigned ix = this->id0;           //current scan index
     unsigned lev = 0;          //current scanning level
     bool childrenDone[this->levs];
     unsigned pos[this->levs]; //location on each level (increases monotonically)
-    int mort = 0;
+    unsigned mort = 0;
 #ifdef FLASH_DEBUG_BITTREE
     DBG_ASSERT(mort_max <= this->blocks());
     DBG_ASSERT(mort_min <= mort_max);
@@ -470,7 +470,7 @@ namespace BitTree {
   }
 
   template<unsigned D,class W>
-  void MortonTree<D,W>::print_if_2d(int datatype) const {
+  void MortonTree<D,W>::print_if_2d(unsigned datatype) const {
     DBG_ASSERT(D==2);
     using namespace std;
     

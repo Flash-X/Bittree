@@ -18,20 +18,20 @@ namespace { // private globals
     virtual unsigned block_count(bool updated) = 0;
     virtual unsigned leaf_count(bool updated) = 0;
     virtual unsigned delta_count() = 0;
-    virtual bool check_refine_bit(int bitid) = 0;
-    virtual bool is_parent(bool updated, int bitid) = 0;
+    virtual bool check_refine_bit(unsigned bitid) = 0;
+    virtual bool is_parent(bool updated, unsigned bitid) = 0;
     virtual void identify(bool updated, int *lev, int *ijk, int *mort, int *bitid) = 0;
-    virtual void locate(bool updated, int bitid, int *lev, int *ijk, int *mort) = 0;
+    virtual void locate(bool updated, unsigned bitid, int *lev, int *ijk, int *mort) = 0;
     virtual void get_id0(bool updated, int *out) = 0;
-    virtual void get_level_id_limits(bool updated, int lev, int *ids) = 0;
-    virtual void get_bitid_list(bool updated, int mort_min, int mort_max, int *out) = 0;
+    virtual void get_level_id_limits(bool updated, unsigned lev, int *ids) = 0;
+    virtual void get_bitid_list(bool updated, unsigned mort_min, unsigned mort_max, int *out) = 0;
     virtual void refine_init() = 0;
-    virtual void refine_mark(int bitid, bool value) = 0;
+    virtual void refine_mark(unsigned bitid, bool value) = 0;
     virtual void refine_reduce(MPI_Comm comm) = 0;
     virtual void refine_reduce_and(MPI_Comm comm) = 0;
     virtual void refine_update() = 0;
     virtual void refine_apply() = 0;
-    virtual void print_2d(int datatype=0) = 0;
+    virtual void print_2d(unsigned datatype=0) = 0;
   };
   
   template<unsigned ndim>
@@ -48,20 +48,20 @@ namespace { // private globals
     unsigned block_count(bool updated);
     unsigned leaf_count(bool updated);
     unsigned delta_count();
-    bool check_refine_bit(int bitid);
-    bool is_parent(bool updated, int bitid);
+    bool check_refine_bit(unsigned bitid);
+    bool is_parent(bool updated, unsigned bitid);
     void identify(bool updated, int *lev, int *ijk, int *mort, int *bitid);
-    void locate(bool updated, int bitid, int *lev, int *ijk, int *mort);
+    void locate(bool updated, unsigned bitid, int *lev, int *ijk, int *mort);
     void get_id0(bool updated, int *out);
-    void get_level_id_limits(bool updated, int lev, int *ids);
-    void get_bitid_list(bool updated, int mort_min, int mort_max, int *out);
+    void get_level_id_limits(bool updated, unsigned lev, int *ids);
+    void get_bitid_list(bool updated, unsigned mort_min, unsigned mort_max, int *out);
     void refine_init();
-    void refine_mark(int bitid, bool value);
+    void refine_mark(unsigned bitid, bool value);
     void refine_reduce(MPI_Comm comm);
     void refine_reduce_and(MPI_Comm comm);
     void refine_update();
     void refine_apply();
-    void print_2d(int datatype=0);
+    void print_2d(unsigned datatype=0);
   };
   
   Ref<TheTree_> the_tree;

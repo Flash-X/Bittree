@@ -46,7 +46,7 @@ namespace BitTree {
     unsigned id_upper_bound() const;
     unsigned level_id0(unsigned lev) const;
     unsigned level_blocks(unsigned lev) const;
-    void level_ids(int lev, int *ids) const;
+    void level_ids(unsigned lev, int *ids) const;
     
     bool block_is_parent(unsigned id) const;
     unsigned block_level(unsigned id) const;
@@ -60,8 +60,8 @@ namespace BitTree {
     
     Ref<MortonTree<D,W> > refine(Ref<BitArray<W> > delta) const;
 
-    void bitid_list(int mort_min,int mort_max, int *out ) const;
-    void print_if_2d(int datatype=0) const;
+    void bitid_list(unsigned mort_min,unsigned mort_max, int *out ) const;
+    void print_if_2d(unsigned datatype=0) const;
   private:
     unsigned parents_before(unsigned lev, unsigned ix) const;
     unsigned parent_find(unsigned lev, unsigned par_ix) const;
