@@ -4,21 +4,19 @@
 #include "Bittree_ref.h"
 
 namespace BitTree {
-  template<class W>
-  Ref<BitArray<W> > BitArray<W>::make(unsigned n) {
-    Ref<BitArray<W> > ref;
+  Ref<BitArray > BitArray::make(unsigned n) {
+    Ref<BitArray > ref;
     unsigned nw = (n + bitw)>>logw; // one extra
     Mem mem = {
-      alignof(BitArray<W>),
-      sizeof(BitArray<W>) + (nw-1)*sizeof(W)
+      alignof(BitArray),
+      sizeof(BitArray) + (nw-1)*sizeof(WType)
     };
-    BitArray<W> *it = new(ref.alloc(mem)) BitArray<W>(n);
-    it->wbuf[nw-1] = W(0);
+    BitArray *it = new(ref.alloc(mem)) BitArray(n);
+    it->wbuf[nw-1] = WType(0);
     return ref;
   }
 
-  template<class W>
-  bool BitArray<W>::get(unsigned ix) const {
+  bool BitArray::get(unsigned ix) const {
     // wbuf is our array of words.
     // Some tricks:
     //   a>>b == a/pow(2,b) and
@@ -38,11 +36,10 @@ namespace BitTree {
     return ix < this->len ? 1 & (wbuf[ix>>logw] >> (ix & (bitw-1))) : 0;
   }
 
-  template<class W>
-  bool BitArray<W>::set(unsigned ix, bool x) {
+  bool BitArray::set(unsigned ix, bool x) {
     // w0 means old word value, w1 is new word value
-    W w0 = wbuf[ix>>logw];
-    W z = x ? W(0) : ones;
+    WType w0 = wbuf[ix>>logw];
+    WType z = x ? WType(0) : ones;
     // We have w0, and we want to set bit at "ix%bitw" to have value "x".
     // Let's pretend x=true, then we want to set the bit to 1, which can be
     // accomiplished with:
@@ -58,22 +55,20 @@ namespace BitTree {
     //
     // The utilty of this compact expression is that it handles both cases
     // without inducing if-else branch instructions.
-    W w1 = z^((z^w0) | one<<(ix&(bitw-1)));
+    WType w1 = z^((z^w0) | one<<(ix&(bitw-1)));
     wbuf[ix>>logw] = w1;
     return w1 != w0;
   }
 
-  template<class W>
-  unsigned BitArray<W>::count() const {
+  unsigned BitArray::count() const {
     return this->count(0, this->len);
   }
 
-  template<class W>
-  unsigned BitArray<W>::count(unsigned ix0, unsigned ix1) const {
+  unsigned BitArray::count(unsigned ix0, unsigned ix1) const {
     if(ix1 <= ix0) return 0;
     unsigned iw0 = ix0 >> logw;
     unsigned iw1 = (std::min(ix1, this->len)-1) >> logw;
-    W m = ones << (ix0 & (bitw-1));
+    WType m = ones << (ix0 & (bitw-1));
     unsigned pop = 0;
     for(unsigned iw=iw0; iw <= iw1; iw++) {
       if(iw == iw1)
@@ -84,10 +79,9 @@ namespace BitTree {
     return pop;
   }
 
-  template<class W>
-  unsigned BitArray<W>::count_xor(
-      const BitArray<W> *a,
-      const BitArray<W> *b,
+  unsigned BitArray::count_xor(
+      const BitArray *a,
+      const BitArray *b,
       unsigned ix0, unsigned ix1
     ) {
     if(ix1 <= ix0) return 0;
@@ -97,12 +91,12 @@ namespace BitTree {
     unsigned b_iw1 = (b_ix1 + bitw-1) >> logw;
     unsigned iw0 = ix0 >> logw;
     unsigned iw1 = std::max(a_iw1, b_iw1);
-    W m = ones << (ix0 & (bitw-1));
+    WType m = ones << (ix0 & (bitw-1));
     unsigned pop = 0;
     for(unsigned iw=iw0; iw < iw1; iw++) {
-      W aw = iw < a_iw1 ? a->wbuf[iw] : W(0);
+      WType aw = iw < a_iw1 ? a->wbuf[iw] : WType(0);
       aw &= ones >> (iw+1 < a_iw1 ? 0 : bitw-1-((a_ix1-1)&(bitw-1)));
-      W bw = iw < b_iw1 ? b->wbuf[iw] : W(0);
+      WType bw = iw < b_iw1 ? b->wbuf[iw] : WType(0);
       bw &= ones >> (iw+1 < b_iw1 ? 0 : bitw-1-((b_ix1-1)&(bitw-1)));
       pop += static_cast<unsigned>(bitpop(m & (aw ^ bw)));
       m = ones;
@@ -110,14 +104,13 @@ namespace BitTree {
     return pop;
   }
 
-  template<class W>
-  unsigned BitArray<W>::find(unsigned ix0, unsigned nth) const {
+  unsigned BitArray::find(unsigned ix0, unsigned nth) const {
     unsigned iw = ix0 >> logw;
-    W m = ones << (ix0&(bitw-1));
+    WType m = ones << (ix0&(bitw-1));
     while(true) {
       if(iw >= len>>logw)
         m &= ones >> (bitw-1-((len-1)&(bitw-1)));
-      W w = m & wbuf[iw];
+      WType w = m & wbuf[iw];
       unsigned pop = static_cast<unsigned>(bitpop(w));
       if(pop > nth) {
         while(nth--)
@@ -130,17 +123,16 @@ namespace BitTree {
     }
   }
 
-  template<class W>
-  void BitArray<W>::fill(bool x) {
+  void BitArray::fill(bool x) {
     this->fill(x, 0, this->len);
   }
-  template<class W>
-  void BitArray<W>::fill(bool x, unsigned ix0, unsigned ix1) {
+
+  void BitArray::fill(bool x, unsigned ix0, unsigned ix1) {
     if(ix0 >= ix1) return;
     DBG_ASSERT(ix1 <= this->len);
     unsigned iw0 = ix0 >> logw, iw1 = (ix1-1) >> logw;
-    W z = x ? W(0) : ones;
-    W m = ones << (ix0 & (bitw-1));
+    WType z = x ? WType(0) : ones;
+    WType m = ones << (ix0 & (bitw-1));
     for(unsigned iw=iw0; iw <= iw1; iw++) {
       if(iw == iw1)
         m &= ones >> (bitw-1-((ix1-1)&(bitw-1)));
@@ -149,62 +141,56 @@ namespace BitTree {
     }
   }
 
-  template<class W>
-  BitArray<W>::Reader::Reader(const BitArray<W> *a, unsigned ix0):
-    a(const_cast<BitArray<W>*>(a)),
+  BitArray::Reader::Reader(const BitArray *a, unsigned ix0):
+    a(const_cast<BitArray*>(a)),
     w( a->wbuf[0] ),
     ix(0) {
     this->seek(ix0);
   }
 
-  template<class W>
   template<unsigned n>
-  W BitArray<W>::Reader::read() {
+  WType BitArray::Reader::read() {
     unsigned n_ = n;
-    BitArray<W> *a = this->a;
-    W &w = this->w;
+    BitArray *a = this->a;
+    WType &w = this->w;
     unsigned &ix = this->ix;
-    W ans;
+    WType ans;
     if(((ix+n)&(bitw-1u)) > (ix&(bitw-1u)))
       ans = (w>>(ix&(bitw-1u))) & ((one<<n_)-1u);
     else {
       ans = w>>(ix&(bitw-1u));
-      w = ((ix+n)&~(bitw-1u)) < a->len ? a->wbuf[(ix>>logw)+1] : W(0);
+      w = ((ix+n)&~(bitw-1u)) < a->len ? a->wbuf[(ix>>logw)+1] : WType(0);
       ans |= (w & ((one<<((ix+n)&(bitw-1u)))-1u)) << (bitw-(ix&(bitw-1u)));
     }
     ix += n;
     return ans;
   }
   
-  template<class W>
-  void BitArray<W>::Reader::seek(unsigned ix) {
+  void BitArray::Reader::seek(unsigned ix) {
     this->w = a->wbuf[ix>>logw] ;
     this->ix = ix;
   }
 
-  template<class W>
-  BitArray<W>::Writer::Writer(BitArray<W> *host, unsigned ix0):
-    BitArray<W>::Reader(host, ix0) {
+  BitArray::Writer::Writer(BitArray *host, unsigned ix0):
+    BitArray::Reader(host, ix0) {
   }
-  template<class W>
-  BitArray<W>::Writer::~Writer() {
+  BitArray::Writer::~Writer() {
     this->flush();
   }
 
-  template<class W>
   template<unsigned n>
-  void BitArray<W>::Writer::write(W x) {
+  void BitArray::Writer::write(WType x) {
     unsigned n_ = n;
-    BitArray<W> *a = this->a;
-    W &w = this->w;
+    BitArray *a = this->a;
+    WType &w = this->w;
     unsigned &ix = this->ix;
     DBG_ASSERT(ix + n <= a->length());
     if(((ix+n)&(bitw-1u)) > (ix&(bitw-1u))) {
-      W m = ((one<<n_)-one)<<(ix&(bitw-1u));
+      WType m = ((one<<n_)-one)<<(ix&(bitw-1u));
       w = (w & ~m) | x<<(ix&(bitw-1u));
     }
     else {
-      W m = ones<<(ix&(bitw-1u));
+      WType m = ones<<(ix&(bitw-1u));
       w = (w & ~m) | x<<(ix&(bitw-1u));
       a->wbuf[ix>>logw] = w;
       w = a->wbuf[(ix>>logw)+1];
@@ -214,36 +200,32 @@ namespace BitTree {
     ix += n;
   }
 
-  template<class W>
-  void BitArray<W>::Writer::flush() {
+  void BitArray::Writer::flush() {
     this->a->wbuf[this->ix>>logw] = this->w;
   }
 
-  template<class W>
-  FastBitArray<W>::FastBitArray(unsigned len):
-    bitsref(BitArray<W>::make(len)),
+  FastBitArray::FastBitArray(unsigned len):
+    bitsref(BitArray::make(len)),
     bits(bitsref),
     chksref(Ref_::new_array<unsigned>(len>>logc)),
     chks(chksref) {
   }
 
-  template<class W>
-  FastBitArray<W>::Builder::Builder(unsigned len):
-    ref(Ref_::new1<FastBitArray<W>,unsigned>(len)),
-    w(typename BitArray<W>::Writer(ref->bits, 0)),
+  FastBitArray::Builder::Builder(unsigned len):
+    ref(Ref_::new1<FastBitArray,unsigned>(len)),
+    w(typename BitArray::Writer(ref->bits, 0)),
     pchk(ref->chks),
     chkpop(0) {
   }
 
-  template<class W>
   template<unsigned n>
-  void FastBitArray<W>::Builder::write(W x) {
+  void FastBitArray::Builder::write(WType x) {
     unsigned ix = w.index();
     if((ix&(bitc-1u))+n >= bitc) {
       if(n == 1)
-        *pchk++ = chkpop + x;
+        *pchk++ = chkpop + static_cast<unsigned>(x);
       else {
-        W m = ~W(0) >> (BitArray<W>::bitw-(bitc-(ix&(bitc-1u))));
+        WType m = ~WType(0) >> (BitArray::bitw-(bitc-(ix&(bitc-1u))));
         *pchk++ = chkpop + static_cast<unsigned>(bitpop(x & m));
       }
     }
@@ -251,14 +233,12 @@ namespace BitTree {
     w.template write<n>(x);
   }
 
-  template<class W>
-  Ref<FastBitArray<W> > FastBitArray<W>::Builder::finish() {
+  Ref<FastBitArray > FastBitArray::Builder::finish() {
     w.flush();
     return ref;
   }
 
-  template<class W>
-  unsigned FastBitArray<W>::count(unsigned ix0, unsigned ix1) const {
+  unsigned FastBitArray::count(unsigned ix0, unsigned ix1) const {
     if(ix1>>logc > ix0>>logc) {
       unsigned pop0 = ix0 == 0 ? 0 : chks[((ix0+bitc-1u)>>logc)-1];
       unsigned pop1 = chks[(ix1>>logc)-1];
@@ -271,8 +251,7 @@ namespace BitTree {
       return bits->count(ix0, ix1);
   }
 
-  template<class W>
-  unsigned FastBitArray<W>::find(unsigned ix0, unsigned nth) const {
+  unsigned FastBitArray::find(unsigned ix0, unsigned nth) const {
     unsigned pop0 = this->count(0, ix0);
     unsigned a = (ix0+bitc-1u)>>logc;
     unsigned b = bits->length()>>logc;
@@ -295,15 +274,13 @@ namespace BitTree {
       return bits->find(ix0, nth);
   }
 
-  template class BitArray<unsigned int>;
-  template class FastBitArray<unsigned int>;
+  template void FastBitArray::Builder::write<1u>(WType x);
+  template void FastBitArray::Builder::write<2u>(WType x);
+  template void FastBitArray::Builder::write<4u>(WType x);
+  template void FastBitArray::Builder::write<8u>(WType x);
+  template WType BitArray::Reader::read<1u>();
+  template WType BitArray::Reader::read<2u>();
+  template WType BitArray::Reader::read<4u>();
+  template WType BitArray::Reader::read<8u>();
 
-  template void FastBitArray<unsigned int>::Builder::write<1u>(unsigned int x);
-  template void FastBitArray<unsigned int>::Builder::write<2u>(unsigned int x);
-  template void FastBitArray<unsigned int>::Builder::write<4u>(unsigned int x);
-  template void FastBitArray<unsigned int>::Builder::write<8u>(unsigned int x);
-  template unsigned int BitArray<unsigned int>::Reader::read<1u>();
-  template unsigned int BitArray<unsigned int>::Reader::read<2u>();
-  template unsigned int BitArray<unsigned int>::Reader::read<4u>();
-  template unsigned int BitArray<unsigned int>::Reader::read<8u>();
 }

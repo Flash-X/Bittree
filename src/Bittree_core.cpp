@@ -230,7 +230,7 @@ void TheTree<ndim>::get_bitid_list(
 template<unsigned ndim>
 void TheTree<ndim>::refine_init() {
   unsigned nbits = tree->id_upper_bound();
-  refine_delta = BitArray<W>::make(nbits);
+  refine_delta = BitArray::make(nbits);
   refine_delta->fill(false);
   is_reduced = true;
   is_updated = false;

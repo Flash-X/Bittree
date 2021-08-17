@@ -18,7 +18,7 @@ namespace BitTree {
   class MortonTree {
     unsigned levs;
     unsigned lev0_blks[D];
-    Ref<FastBitArray<W> > bits;
+    Ref<FastBitArray > bits;
     unsigned id0; // id of first block
     struct Level {
       unsigned id1; // exclusive upper bound on block ids for this level
@@ -58,7 +58,7 @@ namespace BitTree {
     template<class X>
     Block<X> locate(X id) const;
     
-    Ref<MortonTree<D,W> > refine(Ref<BitArray<W> > delta) const;
+    Ref<MortonTree<D,W> > refine(Ref<BitArray > delta) const;
 
     void bitid_list(unsigned mort_min,unsigned mort_max, int *out ) const;
     void print_if_2d(unsigned datatype=0) const;

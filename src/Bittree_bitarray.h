@@ -5,9 +5,13 @@
 #include "Bittree_ref.h"
 
 namespace BitTree {
+
+  // Use unsigned int for word type
+  typedef unsigned int WType;
+
+
   /** Stores, reads, and writes Bit Arrays.
    *    */
-  template<class W>
   class BitArray {
   /** W is the "word" type, looking at bittree_core its always instantiated to
    *  "unsigned". This is not incorrect but probably less efficient than using
@@ -20,22 +24,22 @@ namespace BitTree {
   
   public:
     /** Log_2 of memory allocated to objects of class W, in bits */
-    static const unsigned logw = Log<2,sizeof(W)*CHAR_BIT>::val; 
-    /** bitwidth of W */
+    static const unsigned logw = Log<2,sizeof(WType)*CHAR_BIT>::val; 
+    /** bitwidth of WType */
     static const unsigned bitw = 1u << logw;
-    static const W one = W(1);    /**< 1 cast as W */
-    static const W ones = ~W(0);  /**< Maximum length string of binary 1s cast as W */
+    static const WType one = WType(1);    /**< 1 cast as WType */
+    static const WType ones = ~WType(0);  /**< Maximum length string of binary 1s cast as WType */
   private:
     unsigned len;       /**< Length of Bit Array. Access with length() */
-    W wbuf[1];          /**< Word buffer of type W. Access with word_buf() */
+    WType wbuf[1];          /**< Word buffer of type WType. Access with word_buf() */
   private:
     BitArray(unsigned len): len(len) {}
   public:
-    static Ref<BitArray<W> > make(unsigned n);
+    static Ref<BitArray > make(unsigned n);
   public:
     unsigned length() const { return len; }
     unsigned word_count() const { return (len+bitw-1u)>>logw; }
-    W* word_buf() { return wbuf; }
+    WType* word_buf() { return wbuf; }
     
     bool get(unsigned ix) const;     /**< get value of bit ix */
     bool set(unsigned ix, bool x);   /**< set value of bit ix */
@@ -46,8 +50,8 @@ namespace BitTree {
     unsigned count() const;
     /** count 1's in either a or b */
     static unsigned count_xor(
-      const BitArray<W> *a,
-      const BitArray<W> *b,
+      const BitArray *a,
+      const BitArray *b,
       unsigned ix0, unsigned ix1
     );
     
@@ -61,14 +65,14 @@ namespace BitTree {
      *  Note: reading off the end is safe and returns 0 bits   */
     class Reader {
     protected:
-      BitArray<W> *a;     /**< Bitarray the Reader is reading*/
-      W w;
+      BitArray *a;     /**< Bitarray the Reader is reading*/
+      WType w;
       unsigned ix;        /**< Current index of Reader */ 
     public:
-      Reader(const BitArray<W> *host, unsigned ix0=0);   /**< Constructor */
+      Reader(const BitArray *host, unsigned ix0=0);   /**< Constructor */
       unsigned index() const { return ix; }              /**< Return current index */
       template<unsigned n>
-      W read();                                          /**< Read n values */
+      WType read();                                          /**< Read n values */
       void seek(unsigned ix);                            /**< Search for ix in array */
     };
     
@@ -79,36 +83,35 @@ namespace BitTree {
     private:
       using Reader::seek;
     public:
-      Writer(BitArray<W> *host, unsigned ix0=0);       /**< Default constructor */
+      Writer(BitArray *host, unsigned ix0=0);       /**< Default constructor */
       ~Writer();                                       
       template<unsigned n>
-      void write(W x);                                 /**< Write to array */
+      void write(WType x);                                 /**< Write to array */
       void flush();                                    /**< Flush buffer */
     };
   };
 
-  template<class W>
   class FastBitArray {
     static const unsigned logc = 9, bitc = 1u<<logc;
-    Ref<BitArray<W> > bitsref;
-    BitArray<W> *bits;
+    Ref<BitArray > bitsref;
+    BitArray *bits;
     Ref<unsigned> chksref;
     unsigned *chks;
   public:
     FastBitArray(unsigned len);
     class Builder {
-      Ref<FastBitArray<W> > ref;
-      typename BitArray<W>::Writer w;
+      Ref<FastBitArray > ref;
+      typename BitArray::Writer w;
       unsigned *pchk, chkpop;
     public:
       Builder(unsigned len);
       unsigned index() const { return w.index(); }
       template<unsigned n>
-      void write(W x);
-      Ref<FastBitArray<W> > finish();
+      void write(WType x);
+      Ref<FastBitArray > finish();
     };
   public:
-    const BitArray<W>* bit_array() const { return bits; }
+    const BitArray* bit_array() const { return bits; }
     unsigned length() const { return bits->length(); }
     bool get(unsigned ix) const { return bits->get(ix); }
     unsigned count(unsigned ix0, unsigned ix1) const;

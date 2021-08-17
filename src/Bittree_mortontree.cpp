@@ -102,7 +102,7 @@ namespace BitTree {
     // after that come the actual block bits for all but the last level, which has no bits
     it->id0 = blkpop;
     unsigned lev0_id1 = it->id0;
-    typename FastBitArray<W>::Builder bldr(blkpop);
+    typename FastBitArray::Builder bldr(blkpop);
     // generate inclusion bits
     for(unsigned mort=0; mort < blkpop; mort++) {
       unsigned x[D];
@@ -197,8 +197,8 @@ namespace BitTree {
   MortonTree<D,W>::identify(unsigned lev, const X x[D]) const {
     const unsigned levs = this->levs;
     const unsigned id0 = this->id0;
-    const FastBitArray<W> *fast_bits = this->bits; // use this for counting
-    const BitArray<W> *bits = fast_bits->bit_array(); // use this for bit access
+    const FastBitArray *fast_bits = this->bits; // use this for counting
+    const BitArray *bits = fast_bits->bit_array(); // use this for bit access
     Block<X> ans;
     unsigned ix; // index of current block in current level
     { // top level=0
@@ -304,14 +304,14 @@ namespace BitTree {
 
   template<unsigned D, class W>
   Ref<MortonTree<D,W> > MortonTree<D,W>::refine(
-      Ref<BitArray<W> > delta_
+      Ref<BitArray > delta_
     ) const {
     using namespace std;
     
     const unsigned a_levs = this->levs;
-    const BitArray<W> *a_bits = this->bits->bit_array();
+    const BitArray *a_bits = this->bits->bit_array();
     const unsigned id0 = this->id0;
-    const BitArray<W> *delta = delta_;
+    const BitArray *delta = delta_;
     
     // count the new number of levels, blocks, and bits
     unsigned b_id1 = this->level[0].id1;
@@ -320,7 +320,7 @@ namespace BitTree {
     for(unsigned lev=0; lev < a_levs; lev++) {
       unsigned lev_id0 = lev == 0 ? id0 : this->level[lev-1].id1;
       unsigned lev_id1 = this->level[lev].id1;
-      unsigned b_pars = BitArray<W>::count_xor(a_bits, delta, lev_id0, lev_id1);
+      unsigned b_pars = BitArray::count_xor(a_bits, delta, lev_id0, lev_id1);
       if(b_pars != 0) b_bitlen = b_id1;
       b_id1 += b_pars << D;
       if(b_pars == 0) break;
@@ -343,8 +343,8 @@ namespace BitTree {
     }
     
     // apply delta and insert/remove blocks
-    typename BitArray<W>::Reader a_r(a_bits), del_r(delta, id0);
-    typename FastBitArray<W>::Builder b_w(b_bitlen);
+    typename BitArray::Reader a_r(a_bits), del_r(delta, id0);
+    typename FastBitArray::Builder b_w(b_bitlen);
     
     // copy inclusion bits
     while(a_r.index() < id0)
@@ -358,7 +358,7 @@ namespace BitTree {
     }
     
     // readers of previous level
-    typename BitArray<W>::Reader a_rp(a_bits, id0), del_rp(delta, id0);
+    typename BitArray::Reader a_rp(a_bits, id0), del_rp(delta, id0);
 
     // do remaining levels
     unsigned lev = 1;
@@ -366,7 +366,7 @@ namespace BitTree {
       if(a_rp.template read<1>()) { // it was a parent
         bool still_a_parent = !del_rp.template read<1>();
         // read kids, apply delta
-        W b_kids = a_r.template read<(1<<D)>() ^ del_r.template read<(1<<D)>();
+        WType b_kids = a_r.template read<(1<<D)>() ^ del_r.template read<(1<<D)>();
         // if it became a leaf then we just dont write out the kids
         if(still_a_parent)
           b_w.template write<(1<<D)>(b_kids);

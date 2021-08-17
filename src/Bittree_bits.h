@@ -80,21 +80,19 @@ namespace BitTree {
 #endif
 
   /** returns the greatest power of 2 less-or-equal to x, and 0 if x=0 */
-  template<class X> // X should be unsigned
-  inline X glb_pow2(X x) {
+  inline unsigned glb_pow2(unsigned x) {
     // should unroll
-    for(unsigned i=0; i < Log<2,sizeof(X)*CHAR_BIT>::val; i++)
+    for(unsigned i=0; i < Log<2,sizeof(unsigned)*CHAR_BIT>::val; i++)
       x |= x >> (1<<i);
     return x - (x>>1);
   }
 
   /** returns the least power of 2 greater-or-equal to x,
    *  and 0 if x=0 or if the answer exceeds the numerical range of type X */
-  template<class X> // X should be unsigned
-  inline X lub_pow2(X x) {
+  inline unsigned lub_pow2(unsigned x) {
     x -= 1;
     // should unroll
-    for(unsigned i=0; i < Log<2,sizeof(X)*CHAR_BIT>::val; i++)
+    for(unsigned i=0; i < Log<2,sizeof(unsigned)*CHAR_BIT>::val; i++)
       x |= x >> (1<<i);
     return x + 1;
   }

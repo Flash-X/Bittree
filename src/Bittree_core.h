@@ -38,7 +38,7 @@ namespace { // private globals
   class TheTree: public TheTree_ {
     Ref<MortonTree<ndim,W> > tree;               //Actual Bittree
     Ref<MortonTree<ndim,W> > tree_updated;       //Updated Bittree, before refinement is applied
-    Ref<BitArray<W> > refine_delta;              //(De)refinement flags for blocks
+    Ref<BitArray > refine_delta;              //(De)refinement flags for blocks
     bool is_reduced;                             //Flag to track whether refine_delta is up to date across processors
     bool is_updated;                             //Flag to track whether tree_updated matches latest refine_delta
     bool in_refine;                              //If in_refine=false, tree_updated and refine_delta should not exist 
