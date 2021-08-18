@@ -1,9 +1,10 @@
-2021-08-17
+2021-08-18
 ==========
 
 - Starting making actual design changes.
 --- Removed templates from most of the code.
---- Replaced Ref class with std::shared_ptr.
+--- Replaced Ref class with std::shared_ptr throughout.
+--- Eliminated all uses of Ref and Mem classes and deleted them from the repo.
 
 2021-08-17
 ==========
