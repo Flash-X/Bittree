@@ -1,4 +1,4 @@
-/** \file Functions to compute binary-related values of integers.
+/** Functions to compute binary-related values of integers.
  */
 
 #ifndef BITTREE_BITS_H__

@@ -30,6 +30,10 @@ namespace bittree {
     static const WType one = WType(1);    /**< 1 cast as WType */
     static const WType ones = ~WType(0);  /**< Maximum length string of binary 1s cast as WType */
 
+    // Static Functions
+    static unsigned count_xor(const BitArray& a, const BitArray& b,
+                              unsigned ix0, unsigned ix1);
+
   public:
     // Constructor
     BitArray(unsigned len);
@@ -38,20 +42,17 @@ namespace bittree {
     // Getters and setters
     unsigned length() const { return len_; }
     unsigned word_count() const { return (len_+bitw-1u)>>logw; }
-    std::vector<WType> word_buf() { return wbuf_; }
+    WType* word_buf() { return wbuf_.data(); }
     
     bool get(unsigned ix) const;
     bool set(unsigned ix, bool x);
+    void fill(bool x);
+    void fill(bool x, unsigned ix0, unsigned ix1);
     
     virtual unsigned count(unsigned ix0, unsigned ix1) const;
     unsigned count() const;
-    static unsigned count_xor(const BitArray& a, const BitArray& b,
-                              unsigned ix0, unsigned ix1);
-    
     virtual unsigned find(unsigned ix0, unsigned nth) const;
     
-    void fill(bool x);
-    void fill(bool x, unsigned ix0, unsigned ix1);
 
   protected:
     // Private members

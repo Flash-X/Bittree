@@ -239,7 +239,7 @@ void TheTree::refine_reduce(MPI_Comm comm) {
   int count = static_cast<int>(refine_delta_->word_count());
   MPI_Allreduce(
     MPI_IN_PLACE,
-    refine_delta_->word_buf().data(),
+    refine_delta_->word_buf(),
     count,
     MPI_UNSIGNED,
     MPI_BOR,
@@ -254,7 +254,7 @@ void TheTree::refine_reduce_and(MPI_Comm comm) {
   int count = static_cast<int>(refine_delta_->word_count());
   MPI_Allreduce(
     MPI_IN_PLACE,
-    refine_delta_->word_buf().data(),
+    refine_delta_->word_buf(),
     count,
     MPI_UNSIGNED,
     MPI_BAND,

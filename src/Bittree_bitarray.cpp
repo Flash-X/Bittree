@@ -2,7 +2,6 @@
 #include "Bittree_bits.h"
 
 namespace bittree {
-  using WType = BitArray::WType;
 
   /** Constructor. Makes one extra word */
   BitArray::BitArray(unsigned len)
@@ -149,7 +148,7 @@ namespace bittree {
 
   /** Read n values */
   template<unsigned n>
-  WType BitArray::Reader::read() {
+  BitArray::WType BitArray::Reader::read() {
     WType ans;
     if(((ix_+n)&(bitw-1u)) > (ix_&(bitw-1u)))
       ans = (w_>>(ix_&(bitw-1u))) & ((one<<n)-1u);
@@ -189,7 +188,7 @@ namespace bittree {
 
   /** Write n values to array */
   template<unsigned n>
-  void BitArray::Writer::write(WType x) {
+  void BitArray::Writer::write(BitArray::WType x) {
     DBG_ASSERT(ix_ + n <= a_->length());
     if(((ix_+n)&(bitw-1u)) > (ix_&(bitw-1u))) {
       WType m = ((one<<n)-one)<<(ix_&(bitw-1u));
@@ -230,7 +229,7 @@ namespace bittree {
       if(n == 1)
         pchk_.push_back( chkpop_ + static_cast<unsigned>(x) );
       else {
-        WType m = ~WType(0) >> (BitArray::bitw-(bitc-(ix&(bitc-1u))));
+        WType m = ~WType(0) >> (bitw-(bitc-(ix&(bitc-1u))));
         pchk_.push_back( chkpop_ + static_cast<unsigned>(bitpop(x & m)) );
       }
     }
@@ -279,13 +278,13 @@ namespace bittree {
       return BitArray::find(ix0, nth);
   }
 
-  template void FastBitArray::Builder::write<1u>(WType x);
-  template void FastBitArray::Builder::write<2u>(WType x);
-  template void FastBitArray::Builder::write<4u>(WType x);
-  template void FastBitArray::Builder::write<8u>(WType x);
-  template WType BitArray::Reader::read<1u>();
-  template WType BitArray::Reader::read<2u>();
-  template WType BitArray::Reader::read<4u>();
-  template WType BitArray::Reader::read<8u>();
+  template void FastBitArray::Builder::write<1u>(BitArray::WType x);
+  template void FastBitArray::Builder::write<2u>(BitArray::WType x);
+  template void FastBitArray::Builder::write<4u>(BitArray::WType x);
+  template void FastBitArray::Builder::write<8u>(BitArray::WType x);
+  template BitArray::WType BitArray::Reader::read<1u>();
+  template BitArray::WType BitArray::Reader::read<2u>();
+  template BitArray::WType BitArray::Reader::read<4u>();
+  template BitArray::WType BitArray::Reader::read<8u>();
 
 }

@@ -1,4 +1,4 @@
-/** \file \brief Basic includes and defining Log
+/** \brief Basic includes and defining Log
  *
  *  Includes basic libraries such as cstdlib, iostream, etc.
  *  Sets up a Logarithm function that has size_t as its input and output type
