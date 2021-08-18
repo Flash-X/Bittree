@@ -9,37 +9,11 @@
 using namespace bittree;
 
 namespace { // private globals
-  struct TheTree_ {
-    virtual ~TheTree_() = default;
-    virtual unsigned level_count(bool updated) = 0;
-    virtual unsigned block_count(bool updated) = 0;
-    virtual unsigned leaf_count(bool updated) = 0;
-    virtual unsigned delta_count() = 0;
-    virtual bool check_refine_bit(unsigned bitid) = 0;
-    virtual bool is_parent(bool updated, unsigned bitid) = 0;
-    virtual void identify(bool updated, int *lev, int *ijk, int *mort, int *bitid) = 0;
-    virtual void locate(bool updated, unsigned bitid, int *lev, int *ijk, int *mort) = 0;
-    virtual void get_id0(bool updated, int *out) = 0;
-    virtual void get_level_id_limits(bool updated, unsigned lev, int *ids) = 0;
-    virtual void get_bitid_list(bool updated, unsigned mort_min, unsigned mort_max, int *out) = 0;
-    virtual void refine_init() = 0;
-    virtual void refine_mark(unsigned bitid, bool value) = 0;
-    virtual void refine_reduce(MPI_Comm comm) = 0;
-    virtual void refine_reduce_and(MPI_Comm comm) = 0;
-    virtual void refine_update() = 0;
-    virtual void refine_apply() = 0;
-    virtual void print_2d(unsigned datatype=0) = 0;
-  };
   
-  class TheTree: public TheTree_ {
-    std::shared_ptr<MortonTree > tree;               //Actual Bittree
-    std::shared_ptr<MortonTree > tree_updated;       //Updated Bittree, before refinement is applied
-    std::shared_ptr<BitArray > refine_delta;              //(De)refinement flags for blocks
-    bool is_reduced;                             //Flag to track whether refine_delta is up to date across processors
-    bool is_updated;                             //Flag to track whether tree_updated matches latest refine_delta
-    bool in_refine;                              //If in_refine=false, tree_updated and refine_delta should not exist 
+  class TheTree  {
   public:
     TheTree(const unsigned top[], const bool includes[]);
+
     unsigned level_count(bool updated);
     unsigned block_count(bool updated);
     unsigned leaf_count(bool updated);
@@ -58,9 +32,17 @@ namespace { // private globals
     void refine_update();
     void refine_apply();
     void print_2d(unsigned datatype=0);
+
+  private:
+    std::shared_ptr<MortonTree> tree_;            //!<Actual Bittree
+    std::shared_ptr<MortonTree> tree_updated_;    //!<Updated Bittree, before refinement is applied
+    std::shared_ptr<BitArray> refine_delta_;      //!<(De)refinement flags for blocks
+    bool is_reduced_;  //!<Flag to track whether refine_delta is up to date across processors
+    bool is_updated_;  //!<Flag to track whether tree_updated matches latest refine_delta
+    bool in_refine_;   //!<If in_refine=false, tree_updated and refine_delta should not exist
   };
   
-  std::shared_ptr<TheTree_> the_tree;
+  std::shared_ptr<TheTree> the_tree;
 }
 
 /** Checks if the_tree has been created */
