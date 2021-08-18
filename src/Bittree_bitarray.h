@@ -2,7 +2,6 @@
 #define BITTREE_BITARRAY_H__
 
 #include "Bittree_prelude.h"
-#include "Bittree_ref.h"
 
 namespace BitTree {
 
@@ -94,14 +93,14 @@ namespace BitTree {
   class FastBitArray {
     static const unsigned logc = 9, bitc = 1u<<logc;
     std::shared_ptr<BitArray > bits;
-    Ref<unsigned> chksref;
-    unsigned *chks;
+    std::vector<unsigned> chks;
   public:
     FastBitArray(unsigned len);
     class Builder {
       std::shared_ptr<FastBitArray > ref;
       typename BitArray::Writer w;
-      unsigned *pchk, chkpop;
+      unsigned chkpop;
+      std::vector<unsigned> pchk;
     public:
       Builder(unsigned len);
       unsigned index() const { return w.index(); }

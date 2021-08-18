@@ -2,8 +2,6 @@
 
 #include "Bittree_bitarray.h"
 #include "Bittree_bits.h"
-#include "Bittree_mem.h"
-#include "Bittree_ref.h"
 
 #include <algorithm>
 #include <limits>

@@ -3,7 +3,6 @@
 
 #include "Bittree_bitarray.h"
 #include "Bittree_mortontree.h"
-#include "Bittree_ref.h"
 #include "mpi.h"
 #include <iostream>
 

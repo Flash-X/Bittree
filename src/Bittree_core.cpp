@@ -350,8 +350,6 @@ extern "C" void bittree_init(
   for(int d=0; d < NDIM; d++)
     top[d] = static_cast<unsigned>(topsize[d]);
  
-  //std::shared_ptr<TheTree > r = std::make_shared<TheTree>(top, includes);
-  //Ref<TheTree > r; new(r.alloc()) TheTree(top, includes);
   the_tree = std::make_shared<TheTree>(top,includes);
 }
 
@@ -527,36 +525,3 @@ extern "C" void bittree_print_2d(int *datatype)
     the_tree->print_2d(dtype_u) ;
 }
 
-#if 0
-int main() {
-  unsigned size[2] = {3,3};
-  unsigned excl[1][2] = {1,1};
-  Ref<MortonTree<2,unsigned> > tree = MortonTree<2,unsigned>::make(size, 1, excl);
-  //for(int i=0; i < 10; i++) {
-  for(int i=0; i < 3; i++) {
-    Ref<BitArray<unsigned> > delta = BitArray<unsigned>::make(tree->level_id0(0) + tree->blocks());
-    delta->fill(false, 0, tree->level_id0(tree->levels()-1));
-    delta->fill(true, tree->level_id0(tree->levels()-1), tree->id_upper_bound());
-    //delta->set(tree->level_id0(tree->levels()-1), true);
-    //delta->set(tree->blocks()-1, true);
-    tree = tree->refine(delta);
-    cout << "i=" << i << " tree blocks=" << tree->blocks() << '\n';
-  }
-  if(false) {
-    unsigned sum = 0;
-    for(int i=0; i < 1<<14; i++) {
-      unsigned x[2] = { i%(1<<11), i%(1<<11) };
-      MortonTree<2,unsigned>::Block<unsigned> b0 = tree->identify(10, x);
-      /*MortonTree<2,unsigned>::Block<unsigned> b1 = tree->locate<unsigned>(b0.id);
-      DBG_ASSERT(b0.id == b1.id);
-      DBG_ASSERT(b0.level == b1.level);
-      DBG_ASSERT(b0.mort_ix == b1.mort_ix);
-      DBG_ASSERT(b0.coord[0] == b1.coord[0] && b0.coord[1] == b1.coord[1]);
-      */sum = 5*sum ^ b0.mort;
-    }
-    cout << "sum:" << sum << '\n';
-  }
-  else
-    cout << (MortonTree<2,unsigned>*)tree;
-}
-#endif

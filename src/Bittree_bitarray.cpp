@@ -1,7 +1,5 @@
 #include "Bittree_bitarray.h"
 #include "Bittree_bits.h"
-#include "Bittree_mem.h"
-#include "Bittree_ref.h"
 
 namespace BitTree {
     std::shared_ptr<BitArray > BitArray::make(unsigned n) {
@@ -199,15 +197,14 @@ namespace BitTree {
 
   FastBitArray::FastBitArray(unsigned len):
     bits(BitArray::make(len)),
-    chksref(Ref_::new_array<unsigned>(len>>logc)),
-    chks(chksref) {
+    chks(len>>logc) {
   }
 
   FastBitArray::Builder::Builder(unsigned len):
     ref(std::make_shared<FastBitArray>(len)),
     w(typename BitArray::Writer(ref->bits, 0)),
-    pchk(ref->chks),
-    chkpop(0) {
+    chkpop(0),
+    pchk(ref->chks) {
   }
 
   template<unsigned n>
@@ -215,10 +212,10 @@ namespace BitTree {
     unsigned ix = w.index();
     if((ix&(bitc-1u))+n >= bitc) {
       if(n == 1)
-        *pchk++ = chkpop + static_cast<unsigned>(x);
+        pchk.push_back( chkpop + static_cast<unsigned>(x) );
       else {
         WType m = ~WType(0) >> (BitArray::bitw-(bitc-(ix&(bitc-1u))));
-        *pchk++ = chkpop + static_cast<unsigned>(bitpop(x & m));
+        pchk.push_back( chkpop + static_cast<unsigned>(bitpop(x & m)) );
       }
     }
     chkpop += n == 1 ? x : static_cast<unsigned>(bitpop(x));

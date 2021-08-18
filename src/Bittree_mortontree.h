@@ -3,7 +3,6 @@
 
 #include "Bittree_prelude.h"
 #include "Bittree_bitarray.h"
-#include "Bittree_ref.h"
 
 #include "Bittree_constants.h"
 
