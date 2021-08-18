@@ -31,9 +31,8 @@ namespace bittree {
     static const WType ones = ~WType(0);  /**< Maximum length string of binary 1s cast as WType */
 
   public:
-    // Constructor and factory function
-    BitArray(unsigned len): len_(len) {}
-    static std::shared_ptr<BitArray > make(unsigned n);
+    // Constructor
+    BitArray(unsigned len);
 
     // Getters and setters
     unsigned length() const { return len_; }

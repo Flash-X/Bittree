@@ -4,13 +4,10 @@
 namespace bittree {
   using WType = BitArray::WType;
 
-  std::shared_ptr<BitArray > BitArray::make(unsigned n) {
-    unsigned nw = (n + bitw)>>logw; // one extra
-
-    std::shared_ptr<BitArray> it = std::make_shared<BitArray>(n);
-    it->wbuf_.resize(nw);
-
-    return it;
+  /** Constructor. Makes one extra word */
+  BitArray::BitArray(unsigned len)
+    : len_(len),
+      wbuf_( (len+bitw)>>logw ) {
   }
 
   /**< get value of bit ix */
@@ -204,9 +201,9 @@ namespace bittree {
     this->a_->wbuf_[this->ix_>>logw] = this->w_;
   }
 
-  FastBitArray::FastBitArray(unsigned len_):
-    bits_(BitArray::make(len_)),
-    chks_(len_>>logc) {
+  FastBitArray::FastBitArray(unsigned len):
+    bits_(std::make_shared<BitArray>(len)),
+    chks_(len>>logc) {
   }
 
   FastBitArray::Builder::Builder(unsigned len_):

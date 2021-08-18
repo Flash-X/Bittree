@@ -25,6 +25,7 @@ namespace bittree {
     std::vector<LevelStruct> level;
   public:
     MortonTree() {}
+    MortonTree(const unsigned blks[NDIM], const bool includes[]=0x0);
     ~MortonTree() {std::cout << "Calling MT destructor" << std::endl;}
   public:
     struct Block {
@@ -35,10 +36,6 @@ namespace bittree {
       unsigned coord[NDIM];
     };
   public:
-    static std::shared_ptr<MortonTree > make(
-      const unsigned blks[NDIM],
-      const bool includes[]=0x0
-    );
     unsigned levels() const;
     unsigned blocks() const;
     unsigned leaves() const;

@@ -76,22 +76,18 @@ namespace bittree {
     }
   }
   
-  std::shared_ptr<MortonTree > MortonTree::make(
-      const unsigned size[NDIM],
-      const bool includes[]
-    ) {
-    std::shared_ptr<MortonTree> it = std::make_shared<MortonTree>();
+  MortonTree::MortonTree(const unsigned size[NDIM], const bool includes[]) {
     
     unsigned blkpop = 1;
     for(unsigned d=0; d < NDIM; d++) {
-      it->lev0_blks[d] = size[d];
+      lev0_blks[d] = size[d];
       blkpop *= size[d];
     }
-    it->levs = 1;
+    levs = 1;
     // the first blkpop bits of our bitarray are 'inclusion' bits
     // after that come the actual block bits for all but the last level, which has no bits
-    it->id0 = blkpop;
-    unsigned lev0_id1 = it->id0;
+    id0 = blkpop;
+    unsigned lev0_id1 = id0;
     typename FastBitArray::Builder bldr(blkpop);
     // generate inclusion bits
     for(unsigned mort=0; mort < blkpop; mort++) {
@@ -105,9 +101,8 @@ namespace bittree {
       bldr.write<1>(include);
     }
     // ok bitarray done.  since there's only one level, we dont store any block bits
-    it->bits = bldr.finish();
-    it->level.push_back(LevelStruct{.id1 = lev0_id1});
-    return it;
+    bits = bldr.finish();
+    level.push_back(LevelStruct{.id1 = lev0_id1});
   }
 
   unsigned MortonTree::levels() const {

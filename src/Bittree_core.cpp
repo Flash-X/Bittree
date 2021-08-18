@@ -5,7 +5,7 @@ using namespace bittree;
 
 /** Constructor for TheTree */
 TheTree::TheTree(const unsigned top[], const bool includes[]):
-  tree(MortonTree::make(top, includes)),
+  tree(std::make_shared<MortonTree>(top, includes)),
   is_reduced(false),
   is_updated(false),
   in_refine(false)  {
@@ -215,7 +215,7 @@ void TheTree::get_bitid_list(
   * First step of refinement. */
 void TheTree::refine_init() {
   unsigned nbits = tree->id_upper_bound();
-  refine_delta = BitArray::make(nbits);
+  refine_delta = std::make_shared<BitArray>(nbits);
   refine_delta->fill(false);
   is_reduced = true;
   is_updated = false;
