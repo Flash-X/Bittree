@@ -134,7 +134,7 @@ TEST_F(BittreeUnitTest,RefinementTest){
     }}}
 
 
-    bittree_refine_update();
+    //bittree_refine_update();
     bittree_refine_apply();
 
     // Check block count is correct after second refinement
