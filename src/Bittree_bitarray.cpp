@@ -212,35 +212,35 @@ namespace bittree {
   }
 
   FastBitArray::FastBitArray(unsigned len):
-    bits_(std::make_shared<BitArray>(len)),
-    chks_(len>>logc) {
+    BitArray{len},
+    chks_{len>>logc} {
   }
 
   FastBitArray::Builder::Builder(unsigned len_):
-    ref(std::make_shared<FastBitArray>(len_)),
-    w(typename BitArray::Writer(ref->bits_, 0)),
-    chkpop(0),
-    pchk(ref->chks_) {
+    a_(std::make_shared<FastBitArray>(len_)),
+    w_(BitArray::Writer(a_, 0)),
+    chkpop_(0),
+    pchk_(a_->chks_) {
   }
 
   template<unsigned n>
   void FastBitArray::Builder::write(WType x) {
-    unsigned ix = w.index();
+    unsigned ix = w_.index();
     if((ix&(bitc-1u))+n >= bitc) {
       if(n == 1)
-        pchk.push_back( chkpop + static_cast<unsigned>(x) );
+        pchk_.push_back( chkpop_ + static_cast<unsigned>(x) );
       else {
         WType m = ~WType(0) >> (BitArray::bitw-(bitc-(ix&(bitc-1u))));
-        pchk.push_back( chkpop + static_cast<unsigned>(bitpop(x & m)) );
+        pchk_.push_back( chkpop_ + static_cast<unsigned>(bitpop(x & m)) );
       }
     }
-    chkpop += n == 1 ? x : static_cast<unsigned>(bitpop(x));
-    w.write<n>(x);
+    chkpop_ += n == 1 ? x : static_cast<unsigned>(bitpop(x));
+    w_.write<n>(x);
   }
 
-  std::shared_ptr<FastBitArray > FastBitArray::Builder::finish() {
-    w.flush();
-    return ref;
+  std::shared_ptr<FastBitArray> FastBitArray::Builder::finish() {
+    w_.flush();
+    return a_;
   }
 
   unsigned FastBitArray::count(unsigned ix0, unsigned ix1) const {
@@ -248,18 +248,18 @@ namespace bittree {
       unsigned pop0 = ix0 == 0 ? 0 : chks_[((ix0+bitc-1u)>>logc)-1];
       unsigned pop1 = chks_[(ix1>>logc)-1];
       return
-        bits_->count(ix0, (ix0+bitc-1u) & ~(bitc-1u)) +
+        BitArray::count(ix0, (ix0+bitc-1u) & ~(bitc-1u)) +
         (pop1 - pop0) +
-        bits_->count(ix1 & ~(bitc-1u), ix1);
+        BitArray::count(ix1 & ~(bitc-1u), ix1);
     }
     else
-      return bits_->count(ix0, ix1);
+      return BitArray::count(ix0, ix1);
   }
 
   unsigned FastBitArray::find(unsigned ix0, unsigned nth) const {
     unsigned pop0 = count(0, ix0);
     unsigned a = (ix0+bitc-1u)>>logc;
-    unsigned b = bits_->length()>>logc;
+    unsigned b = len_>>logc;
     if(a <= b && (a==0 ? 0 : chks_[a-1]) - pop0 <= nth) {
       // binary search of interval [a,b] (both inclusive)
       while(a + 10 < b) {
@@ -273,10 +273,10 @@ namespace bittree {
       while(a < b && chks_[a]-pop0 <= nth)
         a += 1;
       nth -= (a==0 ? 0 : chks_[a-1]) - pop0;
-      return bits_->find(a<<logc, nth);
+      return BitArray::find(a<<logc, nth);
     }
     else
-      return bits_->find(ix0, nth);
+      return BitArray::find(ix0, nth);
   }
 
   template void FastBitArray::Builder::write<1u>(WType x);

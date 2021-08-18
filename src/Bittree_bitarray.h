@@ -33,6 +33,7 @@ namespace bittree {
   public:
     // Constructor
     BitArray(unsigned len);
+    virtual ~BitArray() = default;
 
     // Getters and setters
     unsigned length() const { return len_; }
@@ -42,17 +43,17 @@ namespace bittree {
     bool get(unsigned ix) const;
     bool set(unsigned ix, bool x);
     
-    unsigned count(unsigned ix0, unsigned ix1) const;
+    virtual unsigned count(unsigned ix0, unsigned ix1) const;
     unsigned count() const;
     static unsigned count_xor(const BitArray& a, const BitArray& b,
                               unsigned ix0, unsigned ix1);
     
-    unsigned find(unsigned ix0, unsigned nth) const;
+    virtual unsigned find(unsigned ix0, unsigned nth) const;
     
     void fill(bool x);
     void fill(bool x, unsigned ix0, unsigned ix1);
 
-  private:
+  protected:
     // Private members
     unsigned           len_;  /**< Length of Bit Array. Access with length() */
     std::vector<WType> wbuf_; /**< Word buffer of type WType. Access with word_buf() */
@@ -73,7 +74,7 @@ namespace bittree {
       WType w_;                           /**< Current word of Reader */
       unsigned ix_;                       /**< Current index of Reader */
     };
-    
+
     /** Class for writing the bit array.
      *  Note: writing off the end is undefined! */
     class Writer {
@@ -95,7 +96,7 @@ namespace bittree {
   /** FastBitArray class
     *
     */
-  class FastBitArray {
+  class FastBitArray : public BitArray {
 
     static const unsigned logc = 9;
     static const unsigned bitc = 1u<<logc;
@@ -104,26 +105,23 @@ namespace bittree {
     FastBitArray(unsigned len);
 
     class Builder {
-      std::shared_ptr<FastBitArray > ref;
-      typename BitArray::Writer w;
-      unsigned chkpop;
-      std::vector<unsigned> pchk;
     public:
       Builder(unsigned len);
-      unsigned index() const { return w.index(); }
+      unsigned index() const { return w_.index(); }
       template<unsigned n>
       void write(BitArray::WType x);
-      std::shared_ptr<FastBitArray > finish();
+      std::shared_ptr<FastBitArray> finish();
+    private:
+      std::shared_ptr<FastBitArray> a_;
+      BitArray::Writer w_;
+      unsigned chkpop_;
+      std::vector<unsigned> pchk_;
     };
 
-    std::shared_ptr<BitArray> bit_array() const { return bits_; }
-    unsigned length() const { return bits_->length(); }
-    bool get(unsigned ix) const { return bits_->get(ix); }
-    unsigned count(unsigned ix0, unsigned ix1) const;
-    unsigned find(unsigned ix0, unsigned nth) const;
+    unsigned count(unsigned ix0, unsigned ix1) const override;
+    unsigned find(unsigned ix0, unsigned nth) const override;
 
-  private:
-    std::shared_ptr<BitArray > bits_;
+  protected:
     std::vector<unsigned> chks_;
   };
 }

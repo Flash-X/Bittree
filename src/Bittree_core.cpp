@@ -81,7 +81,7 @@ void TheTree::identify(
   if(updated && in_refine_) {
     if (not is_updated_) refine_update();
     if(tree_updated_->inside(lev_u, coord)) {
-      typename MortonTree::Block b = tree_updated_->identify(lev_u, coord);
+      MortonTree::Block b = tree_updated_->identify(lev_u, coord);
       *lev = static_cast<int>(b.level);
       for(unsigned d=0; d < NDIM; d++)
         ijk[d] = static_cast<int>(b.coord[d]);
@@ -96,7 +96,7 @@ void TheTree::identify(
   }
   else {
     if(tree_->inside(lev_u, coord)) {
-      typename MortonTree::Block b = tree_->identify(lev_u, coord);
+      MortonTree::Block b = tree_->identify(lev_u, coord);
       *lev = static_cast<int>(b.level);
       for(unsigned d=0; d < NDIM; d++)
         ijk[d] = static_cast<int>(b.coord[d]);
@@ -124,7 +124,7 @@ void TheTree::locate(
   if(updated && in_refine_) {
     if (not is_updated_) refine_update();
     if(bitid < tree_updated_->id_upper_bound() ) {
-      typename MortonTree::Block b = tree_updated_->locate(bitid);
+      MortonTree::Block b = tree_updated_->locate(bitid);
       *lev = static_cast<int>(b.level);
       for(unsigned d=0; d < NDIM; d++)
         ijk[d] = static_cast<int>(b.coord[d]);
@@ -139,7 +139,7 @@ void TheTree::locate(
   }
   else {
     if(bitid < tree_->id_upper_bound() ) {
-      typename MortonTree::Block b = tree_->locate(bitid);
+      MortonTree::Block b = tree_->locate(bitid);
       *lev = static_cast<int>(b.level);
       for(unsigned d=0; d < NDIM; d++)
         ijk[d] = static_cast<int>( b.coord[d]);
