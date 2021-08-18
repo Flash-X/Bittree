@@ -81,14 +81,11 @@ namespace bittree {
   }
 
   /** count 1's in either a or b */
-  unsigned BitArray::count_xor(
-      const std::shared_ptr<BitArray> a,
-      const std::shared_ptr<BitArray> b,
-      unsigned ix0, unsigned ix1
-    ) {
+  unsigned BitArray::count_xor(const BitArray& a, const BitArray& b,
+                               unsigned ix0, unsigned ix1) {
     if(ix1 <= ix0) return 0;
-    unsigned a_ix1 = std::min(ix1, a->len_);
-    unsigned b_ix1 = std::min(ix1, b->len_);
+    unsigned a_ix1 = std::min(ix1, a.len_);
+    unsigned b_ix1 = std::min(ix1, b.len_);
     unsigned a_iw1 = (a_ix1 + bitw-1) >> logw;
     unsigned b_iw1 = (b_ix1 + bitw-1) >> logw;
     unsigned iw0 = ix0 >> logw;
@@ -96,9 +93,9 @@ namespace bittree {
     WType m = ones << (ix0 & (bitw-1));
     unsigned pop = 0;
     for(unsigned iw=iw0; iw < iw1; iw++) {
-      WType aw = iw < a_iw1 ? a->wbuf_[iw] : WType(0);
+      WType aw = iw < a_iw1 ? a.wbuf_[iw] : WType(0);
       aw &= ones >> (iw+1 < a_iw1 ? 0 : bitw-1-((a_ix1-1)&(bitw-1)));
-      WType bw = iw < b_iw1 ? b->wbuf_[iw] : WType(0);
+      WType bw = iw < b_iw1 ? b.wbuf_[iw] : WType(0);
       bw &= ones >> (iw+1 < b_iw1 ? 0 : bitw-1-((b_ix1-1)&(bitw-1)));
       pop += static_cast<unsigned>(bitpop(m & (aw ^ bw)));
       m = ones;

@@ -45,8 +45,7 @@ namespace bittree {
     
     unsigned count(unsigned ix0, unsigned ix1) const;
     unsigned count() const;
-    static unsigned count_xor(const std::shared_ptr<BitArray> a,
-                              const std::shared_ptr<BitArray> b,
+    static unsigned count_xor(const BitArray& a, const BitArray& b,
                               unsigned ix0, unsigned ix1);
     
     unsigned find(unsigned ix0, unsigned nth) const;

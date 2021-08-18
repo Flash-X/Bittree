@@ -290,7 +290,7 @@ namespace bittree {
     for(unsigned lev=0; lev < a_levs; lev++) {
       unsigned lev_id0 = lev == 0 ? id0 : this->level[lev-1].id1;
       unsigned lev_id1 = this->level[lev].id1;
-      unsigned b_pars = BitArray::count_xor(a_bits, delta_, lev_id0, lev_id1);
+      unsigned b_pars = BitArray::count_xor(*a_bits, *delta_, lev_id0, lev_id1);
       if(b_pars != 0) b_bitlen = b_id1;
       b_id1 += b_pars << NDIM;
       if(b_pars == 0) break;
