@@ -60,33 +60,35 @@ namespace bittree {
   public:
 
     /** Class for reading off the bit array.
-     *  Takes a virtual BitArray of type W and reads off values.
      *  Note: reading off the end is safe and returns 0 bits   */
     class Reader {
     public:
-      Reader(const std::shared_ptr<BitArray> host, unsigned ix0=0);
+      Reader(std::shared_ptr<const BitArray> host, unsigned ix0=0);
       unsigned index() const { return ix_; }  /**< Return current index */
       template<unsigned n>
       WType read();
       void seek(unsigned ix);
     protected:
-      std::shared_ptr<BitArray> a_; /**< Bitarray the Reader is reading*/
-      WType w_;                     /**< Current word of Reader */
-      unsigned ix_;                 /**< Current index of Reader */
+      std::shared_ptr<const BitArray> a_; /**< Bitarray the Reader is reading*/
+      WType w_;                           /**< Current word of Reader */
+      unsigned ix_;                       /**< Current index of Reader */
     };
     
     /** Class for writing the bit array.
-     *  Uses seek method from Reader.
      *  Note: writing off the end is undefined! */
-    class Writer: public Reader {
+    class Writer {
     public:
       Writer(std::shared_ptr<BitArray> host, unsigned ix0=0);
-      ~Writer();                                       
+      ~Writer();
+      unsigned index() const { return ix_; }  /**< Return current index */
       template<unsigned n>
       void write(WType x);
+      void seek(unsigned ix);
       void flush();
-    private:
-      using Reader::seek;
+    protected:
+      std::shared_ptr<BitArray> a_; /**< Bitarray the Writer is writing on*/
+      WType w_;                     /**< Current word of Writer */
+      unsigned ix_;                 /**< Current index of Writer */
     };
   };
 

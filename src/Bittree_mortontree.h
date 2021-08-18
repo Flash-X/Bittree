@@ -53,7 +53,7 @@ namespace bittree {
     bool inside(unsigned lev, const unsigned coord[NDIM]) const;
     Block identify(unsigned lev, const unsigned coord[NDIM]) const;
 
-    std::shared_ptr<MortonTree> refine(std::shared_ptr<BitArray > delta) const;
+    std::shared_ptr<MortonTree> refine(std::shared_ptr<const BitArray> delta) const;
     void bitid_list(unsigned mort_min,unsigned mort_max, int *out ) const;
 
     void print_if_2d(unsigned datatype=0) const;

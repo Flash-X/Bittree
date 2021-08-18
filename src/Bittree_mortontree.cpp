@@ -273,9 +273,7 @@ namespace bittree {
     return ans;
   }
 
-  std::shared_ptr<MortonTree > MortonTree::refine(
-      std::shared_ptr<BitArray > delta_
-    ) const {
+  std::shared_ptr<MortonTree > MortonTree::refine(std::shared_ptr<const BitArray> delta) const {
     
     const unsigned a_levs = levs_;
     const std::shared_ptr<BitArray> a_bits = bits_->bit_array();
@@ -287,7 +285,7 @@ namespace bittree {
     for(unsigned lev=0; lev < a_levs; lev++) {
       unsigned lev_id0 = lev == 0 ? id0_ : level_[lev-1].id1;
       unsigned lev_id1 = level_[lev].id1;
-      unsigned b_pars = BitArray::count_xor(*a_bits, *delta_, lev_id0, lev_id1);
+      unsigned b_pars = BitArray::count_xor(*a_bits, *delta, lev_id0, lev_id1);
       if(b_pars != 0) b_bitlen = b_id1;
       b_id1 += b_pars << NDIM;
       if(b_pars == 0) break;
@@ -306,7 +304,7 @@ namespace bittree {
     }
     
     // apply delta and insert/remove blocks
-    typename BitArray::Reader a_r(a_bits), del_r(delta_, id0_);
+    typename BitArray::Reader a_r(a_bits), del_r(delta, id0_);
     typename FastBitArray::Builder b_w(b_bitlen);
     
     // copy inclusion bits
@@ -321,7 +319,7 @@ namespace bittree {
     }
     
     // readers of previous level
-    typename BitArray::Reader a_rp(a_bits, id0_), del_rp(delta_, id0_);
+    typename BitArray::Reader a_rp(a_bits, id0_), del_rp(delta, id0_);
 
     // do remaining levels
     unsigned lev = 1;

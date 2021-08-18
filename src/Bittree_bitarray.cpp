@@ -28,7 +28,7 @@ namespace bittree {
     // So, we're getting the word holding bit "ix" (ix/bitw), then shifting it down
     // by its position ordinal in the word (ix%bitw), then AND'ing by 1 to isolate just
     // that bit (zero's higher ones).
-    return ix < this->len_ ? 1 & (wbuf_[ix>>logw] >> (ix & (bitw-1))) : 0;
+    return ix < len_ ? 1 & (wbuf_[ix>>logw] >> (ix & (bitw-1))) : 0;
   }
 
   /**< set value of bit ix */
@@ -58,19 +58,19 @@ namespace bittree {
 
   /** count 1's in interval [ix0,ix1) */
   unsigned BitArray::count() const {
-    return this->count(0, this->len_);
+    return count(0, len_);
   }
 
   /** count 1's in whole array */
   unsigned BitArray::count(unsigned ix0, unsigned ix1) const {
     if(ix1 <= ix0) return 0;
     unsigned iw0 = ix0 >> logw;
-    unsigned iw1 = (std::min(ix1, this->len_)-1) >> logw;
+    unsigned iw1 = (std::min(ix1, len_)-1) >> logw;
     WType m = ones << (ix0 & (bitw-1));
     unsigned pop = 0;
     for(unsigned iw=iw0; iw <= iw1; iw++) {
       if(iw == iw1)
-        m &= ones >> (bitw-1-((std::min(ix1,this->len_)-1)&(bitw-1)));
+        m &= ones >> (bitw-1-((std::min(ix1,len_)-1)&(bitw-1)));
       pop += static_cast<unsigned>(bitpop(wbuf_[iw] & m));
       m = ones;
     }
@@ -121,13 +121,13 @@ namespace bittree {
 
   /** Fill whole Bit Array */
   void BitArray::fill(bool x) {
-    this->fill(x, 0, this->len_);
+    fill(x, 0, len_);
   }
 
   /** Fill part of Bit Array */
   void BitArray::fill(bool x, unsigned ix0, unsigned ix1) {
     if(ix0 >= ix1) return;
-    DBG_ASSERT(ix1 <= this->len_);
+    DBG_ASSERT(ix1 <= len_);
     unsigned iw0 = ix0 >> logw, iw1 = (ix1-1) >> logw;
     WType z = x ? WType(0) : ones;
     WType m = ones << (ix0 & (bitw-1));
@@ -140,11 +140,11 @@ namespace bittree {
   }
 
   /** Constructor */
-  BitArray::Reader::Reader(std::shared_ptr<BitArray> a_in, unsigned ix0):
-    a_(a_in),
-    w_( a_->wbuf_[0] ),
+  BitArray::Reader::Reader(std::shared_ptr<const BitArray> host, unsigned ix0):
+    a_(host),
+    w_(host->wbuf_[0]),
     ix_(0) {
-    this->seek(ix0);
+    seek(ix0);
   }
 
   /** Read n values */
@@ -164,17 +164,27 @@ namespace bittree {
  
   /** Search for ix in array */
   void BitArray::Reader::seek(unsigned ix) {
-    this->w_ = a_->wbuf_[ix>>logw] ;
-    this->ix_ = ix;
+    w_ = a_->wbuf_[ix>>logw] ;
+    ix_ = ix;
   }
 
   /** Constructor */
-  BitArray::Writer::Writer(std::shared_ptr<BitArray> host, unsigned ix0):
-    BitArray::Reader(host, ix0) {
+  BitArray::Writer::Writer(std::shared_ptr<BitArray> host, unsigned ix0)
+   :a_(host),
+    w_(host->wbuf_[0]),
+    ix_(0) {
+    seek(ix0);
   }
+
+  /** Search for ix in array */
+  void BitArray::Writer::seek(unsigned ix) {
+    w_ = a_->wbuf_[ix>>logw] ;
+    ix_ = ix;
+  }
+
   /** Destructor */
   BitArray::Writer::~Writer() {
-    this->flush();
+    flush();
   }
 
   /** Write n values to array */
@@ -198,7 +208,7 @@ namespace bittree {
 
   /** Flush buffer */
   void BitArray::Writer::flush() {
-    this->a_->wbuf_[this->ix_>>logw] = this->w_;
+    a_->wbuf_[ix_>>logw] = w_;
   }
 
   FastBitArray::FastBitArray(unsigned len):
@@ -247,7 +257,7 @@ namespace bittree {
   }
 
   unsigned FastBitArray::find(unsigned ix0, unsigned nth) const {
-    unsigned pop0 = this->count(0, ix0);
+    unsigned pop0 = count(0, ix0);
     unsigned a = (ix0+bitc-1u)>>logc;
     unsigned b = bits_->length()>>logc;
     if(a <= b && (a==0 ? 0 : chks_[a-1]) - pop0 <= nth) {
