@@ -9,8 +9,7 @@ HEADERS_BASE = \
     $(INCDIR)/Bittree_bits.h \
     $(INCDIR)/Bittree_core.h \
     $(INCDIR)/Bittree_mortontree.h \
-    $(INCDIR)/Bittree_prelude.h \
-    $(INCDIR)/macros.h
+    $(INCDIR)/Bittree_prelude.h
 
 SRCS_BASE    = \
     $(SRCDIR)/Bittree_bitarray.cpp \
