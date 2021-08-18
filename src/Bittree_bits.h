@@ -10,7 +10,8 @@
 # include "builtins.h"
 #endif
 
-namespace BitTree {
+namespace bittree {
+
 #if defined(__IBMCPP__)
   inline int bitpop(unsigned int x) {
     return __popcnt4(x);
@@ -96,5 +97,6 @@ namespace BitTree {
       x |= x >> (1<<i);
     return x + 1;
   }
+
 }
 #endif

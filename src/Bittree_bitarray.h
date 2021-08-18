@@ -3,7 +3,7 @@
 
 #include "Bittree_prelude.h"
 
-namespace BitTree {
+namespace bittree {
 
   // Use unsigned int for word type
   typedef unsigned int WType;

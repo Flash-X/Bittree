@@ -6,7 +6,7 @@
 #include "mpi.h"
 #include <iostream>
 
-using namespace BitTree;
+using namespace bittree;
 
 namespace { // private globals
   struct TheTree_ {

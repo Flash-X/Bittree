@@ -1,7 +1,7 @@
 #include "Bittree_bitarray.h"
 #include "Bittree_bits.h"
 
-namespace BitTree {
+namespace bittree {
     std::shared_ptr<BitArray > BitArray::make(unsigned n) {
     unsigned nw = (n + bitw)>>logw; // one extra
 

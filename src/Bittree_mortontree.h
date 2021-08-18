@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-namespace BitTree {
+namespace bittree {
   struct LevelStruct {
     unsigned id1; // exclusive upper bound on block ids for this level
   };

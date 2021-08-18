@@ -1,6 +1,6 @@
 #include "Bittree_core.h"
 
-using namespace BitTree;
+using namespace bittree;
 
 
 /** Constructor for TheTree */

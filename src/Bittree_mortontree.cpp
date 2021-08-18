@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <iostream>
 
-namespace BitTree {
+namespace bittree {
   unsigned rect_coord_to_mort(const unsigned domain[NDIM], const unsigned coord[NDIM]) {
     unsigned x[NDIM], box[NDIM];
     for(unsigned d=0; d < NDIM; d++) {
