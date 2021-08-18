@@ -332,7 +332,7 @@ namespace bittree {
       if(a_rp.read<1>()) { // it was a parent
         bool still_a_parent = !del_rp.read<1>();
         // read kids, apply delta
-        WType b_kids = a_r.read<(1<<NDIM)>() ^ del_r.read<(1<<NDIM)>();
+        BitArray::WType b_kids = a_r.read<(1<<NDIM)>() ^ del_r.read<(1<<NDIM)>();
         // if it became a leaf then we just dont write out the kids
         if(still_a_parent)
           b_w.write<(1<<NDIM)>(b_kids);

@@ -5,8 +5,6 @@
 
 namespace bittree {
 
-  // Use unsigned int for word type
-  typedef unsigned int WType;
 
 
   /** Stores, reads, and writes Bit Arrays.
@@ -22,80 +20,89 @@ namespace bittree {
    *  in position zero. */
   
   public:
+    /** Definition of Word Type */
+    typedef unsigned int WType;
+
+    // Static variables
     /** Log_2 of memory allocated to objects of class W, in bits */
     static const unsigned logw = Log<2,sizeof(WType)*CHAR_BIT>::val; 
-    /** bitwidth of WType */
-    static const unsigned bitw = 1u << logw;
+    static const unsigned bitw = 1u << logw; /**< bitwidth of WType */
     static const WType one = WType(1);    /**< 1 cast as WType */
     static const WType ones = ~WType(0);  /**< Maximum length string of binary 1s cast as WType */
-  private:
-    unsigned len;       /**< Length of Bit Array. Access with length() */
-    std::vector<WType> wbuf;          /**< Word buffer of type WType. Access with word_buf() */
+
   public:
-    BitArray(unsigned len): len(len) {}
-  public:
+    // Constructor and factory function
+    BitArray(unsigned len): len_(len) {}
     static std::shared_ptr<BitArray > make(unsigned n);
-  public:
-    unsigned length() const { return len; }
-    unsigned word_count() const { return (len+bitw-1u)>>logw; }
-    std::vector<WType> word_buf() { return wbuf; }
+
+    // Getters and setters
+    unsigned length() const { return len_; }
+    unsigned word_count() const { return (len_+bitw-1u)>>logw; }
+    std::vector<WType> word_buf() { return wbuf_; }
     
-    bool get(unsigned ix) const;     /**< get value of bit ix */
-    bool set(unsigned ix, bool x);   /**< set value of bit ix */
+    bool get(unsigned ix) const;
+    bool set(unsigned ix, bool x);
     
-    /** count 1's in interval [ix0,ix1) */
     unsigned count(unsigned ix0, unsigned ix1) const;
-    /** count 1's in whole array */
     unsigned count() const;
-    /** count 1's in either a or b */
-    static unsigned count_xor(
-      const std::shared_ptr<BitArray> a,
-      const std::shared_ptr<BitArray> b,
-      unsigned ix0, unsigned ix1
-    );
+    static unsigned count_xor(const std::shared_ptr<BitArray> a,
+                              const std::shared_ptr<BitArray> b,
+                              unsigned ix0, unsigned ix1);
     
     unsigned find(unsigned ix0, unsigned nth) const;
     
-    void fill(bool x);                               /** Fill whole Bit Array */
-    void fill(bool x, unsigned ix0, unsigned ix1);   /** Fill part of Bit Array */
-    
+    void fill(bool x);
+    void fill(bool x, unsigned ix0, unsigned ix1);
+
+  private:
+    // Private members
+    unsigned           len_;  /**< Length of Bit Array. Access with length() */
+    std::vector<WType> wbuf_; /**< Word buffer of type WType. Access with word_buf() */
+
+  public:
+
     /** Class for reading off the bit array.
      *  Takes a virtual BitArray of type W and reads off values.
      *  Note: reading off the end is safe and returns 0 bits   */
     class Reader {
-    protected:
-      std::shared_ptr<BitArray> a;     /**< Bitarray the Reader is reading*/
-      WType w;
-      unsigned ix;        /**< Current index of Reader */ 
     public:
-      Reader(const std::shared_ptr<BitArray> host, unsigned ix0=0);   /**< Constructor */
-      unsigned index() const { return ix; }              /**< Return current index */
+      Reader(const std::shared_ptr<BitArray> host, unsigned ix0=0);
+      unsigned index() const { return ix_; }  /**< Return current index */
       template<unsigned n>
-      WType read();                                          /**< Read n values */
-      void seek(unsigned ix);                            /**< Search for ix in array */
+      WType read();
+      void seek(unsigned ix);
+    protected:
+      std::shared_ptr<BitArray> a_; /**< Bitarray the Reader is reading*/
+      WType w_;                     /**< Current word of Reader */
+      unsigned ix_;                 /**< Current index of Reader */
     };
     
     /** Class for writing the bit array.
      *  Uses seek method from Reader.
      *  Note: writing off the end is undefined! */
     class Writer: public Reader {
-    private:
-      using Reader::seek;
     public:
-      Writer(std::shared_ptr<BitArray> host, unsigned ix0=0);       /**< Default constructor */
+      Writer(std::shared_ptr<BitArray> host, unsigned ix0=0);
       ~Writer();                                       
       template<unsigned n>
-      void write(WType x);                                 /**< Write to array */
-      void flush();                                    /**< Flush buffer */
+      void write(WType x);
+      void flush();
+    private:
+      using Reader::seek;
     };
   };
 
+  /** FastBitArray class
+    *
+    */
   class FastBitArray {
-    static const unsigned logc = 9, bitc = 1u<<logc;
-    std::shared_ptr<BitArray > bits;
-    std::vector<unsigned> chks;
+
+    static const unsigned logc = 9;
+    static const unsigned bitc = 1u<<logc;
+
   public:
     FastBitArray(unsigned len);
+
     class Builder {
       std::shared_ptr<FastBitArray > ref;
       typename BitArray::Writer w;
@@ -105,15 +112,19 @@ namespace bittree {
       Builder(unsigned len);
       unsigned index() const { return w.index(); }
       template<unsigned n>
-      void write(WType x);
+      void write(BitArray::WType x);
       std::shared_ptr<FastBitArray > finish();
     };
-  public:
-    std::shared_ptr<BitArray> bit_array() const { return bits; }
-    unsigned length() const { return bits->length(); }
-    bool get(unsigned ix) const { return bits->get(ix); }
+
+    std::shared_ptr<BitArray> bit_array() const { return bits_; }
+    unsigned length() const { return bits_->length(); }
+    bool get(unsigned ix) const { return bits_->get(ix); }
     unsigned count(unsigned ix0, unsigned ix1) const;
     unsigned find(unsigned ix0, unsigned nth) const;
+
+  private:
+    std::shared_ptr<BitArray > bits_;
+    std::vector<unsigned> chks_;
   };
 }
 #endif
