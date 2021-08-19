@@ -120,44 +120,26 @@ void BittreeAmr::refine_apply() {
   * If tree has been updated, print both original and updated version. 
   * Can be passed a datatype to change what number prints at each block loc. 
   * (0=bitid, 1=morton number, 2=parentage) */
-void BittreeAmr::print_2d(unsigned datatype) const {
-  if (NDIM==2) { 
-    switch (datatype) {
-      case 0: 
-        std::cout << "printing original tree (datatype=bitid): " <<std::endl;
-        break;
-      case 1:
-        std::cout << "printing original tree (datatype=mort): " <<std::endl;
-        break;
-      case 2:
-        std::cout << "printing original tree (datatype=parent): " <<std::endl;
-        break;
-    }
-    tree_->print_if_2d(datatype);
+void BittreeAmr::print_2d(unsigned datatype, unsigned slice) const {
+  if (NDIM==2 && (datatype==0 || datatype==1 || datatype==2)) { 
+    std::cout << "printing original tree:" <<std::endl;
+    std::cout << tree_->print_slice(datatype,slice) << std::endl;
+
     if(in_refine_) {
     std::cout << "printing refine_delta_ (indexed by bitid):" <<std::endl;
     for (unsigned j=0; j<refine_delta_->length() ; j++){
       std::cout << j << ": " << refine_delta_->get(j) << ";  " ;
     }
-    }
     std::cout << std::endl;
+    }
+
     if (in_refine_ && is_updated_) {
-      switch (datatype) {
-      case 0: 
-        std::cout << "printing updated tree (datatype=bitid): " <<std::endl;
-        break;
-      case 1:
-        std::cout << "printing updated tree (datatype=mort): " <<std::endl;
-        break;
-      case 2:
-        std::cout << "printing updated tree (datatype=parent): " <<std::endl;
-        break;
-      }
-      tree_updated_->print_if_2d(datatype);
+      std::cout << "printing updated tree:" <<std::endl;
+      std::cout << tree_updated_->print_slice(datatype,slice) << std::endl;
     }
   }
   else {
-    std::cout << "Error: tried to print 2d Bittree but NDIM is not 2!" <<std::endl;
+    std::cout << "Error: datatype must be 0(bitid), 1(mort), or 2(parent)!" <<std::endl;
   }
 }
 

@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <limits>
 #include <iomanip>
-#include <iostream>
+#include <sstream>
 
 namespace bittree {
   unsigned rect_coord_to_mort(const unsigned domain[NDIM], const unsigned coord[NDIM]) {
@@ -119,7 +119,8 @@ namespace bittree {
   }
 
   unsigned MortonTree::top_size(unsigned dim) const {
-    return lev0_blks_[dim];
+    if(dim<NDIM) return lev0_blks_[dim];
+    else return 0;
   }
   
   unsigned MortonTree::id_upper_bound() const {
@@ -421,13 +422,20 @@ namespace bittree {
     }
   }
 
-  void MortonTree::print_if_2d(unsigned datatype) const {
+  std::string MortonTree::print_slice(unsigned datatype, unsigned slice) const {
+    static const std::vector<std::string> dtypes { "bitid", "mort", "parent" };
+
+    unsigned k = K3D*slice;
     DBG_ASSERT(NDIM==2);
-    using namespace std;
-    
+
+    std::ostringstream buffer;
+    buffer << "Bittree, datatype=" << dtypes[datatype];
+    if(NDIM==3) buffer << " (slice k=" << k << ")";
+    buffer << ":\n";
+
     unsigned levs = levels();
     for(unsigned lev=0; lev < levs; lev++) {
-      cout << "lev=" << lev << '\n';
+      buffer << "lev=" << lev <<'\n';
       
       unsigned ij[2];
       for(ij[1]=0; ij[1] < top_size(1)<<lev; ij[1]++) {
@@ -441,23 +449,23 @@ namespace bittree {
             DBG_ASSERT(b0.coord[0] == b1.coord[0] && b0.coord[1] == b1.coord[1]);
             switch(datatype) {
               case 0:
-                cout << std::setw(4) << b0.id;         //print bittree id number
+                buffer << std::setw(4) << b0.id;         //print bittree id number
                 break;
               case 1: 
-                cout << std::setw(4) << (b0.mort+1);   //print 1-based morton number
+                buffer << std::setw(4) << (b0.mort+1);   //print 1-based morton number
                 break;
               case 2: 
-                cout << std::setw(4) << block_is_parent(b0.id); //print block parentage
+                buffer << std::setw(4) << block_is_parent(b0.id); //print block parentage
                 break;
             }
           }
           else
-            cout << std::setw(4) << ' ';
+            buffer << std::setw(4) << ' ';
         }
-        cout << '\n';
+        buffer << '\n';
       }
     }
-    cout.flush();
+    return buffer.str();
   }
 
 }

@@ -56,7 +56,7 @@ namespace bittree {
     std::shared_ptr<MortonTree> refine(std::shared_ptr<const BitArray> delta) const;
     void bitid_list(unsigned mort_min,unsigned mort_max, int *out ) const;
 
-    void print_if_2d(unsigned datatype=0) const;
+    std::string print_slice(unsigned datatype, unsigned slice=0) const;
 
   private:
     unsigned parents_before(unsigned lev, unsigned ix) const;
