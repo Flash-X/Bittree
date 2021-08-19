@@ -13,23 +13,19 @@ class BittreeAmr  {
 
     std::shared_ptr<MortonTree> getTree(bool updated=false);
 
-    unsigned level_count(bool updated);
-    unsigned block_count(bool updated);
-    unsigned leaf_count(bool updated);
+    // Get refinement info
     unsigned delta_count();
     bool check_refine_bit(unsigned bitid);
-    bool is_parent(bool updated, unsigned bitid);
-    void identify(bool updated, int *lev, int *ijk, int *mort, int *bitid);
-    void locate(bool updated, unsigned bitid, int *lev, int *ijk, int *mort);
-    void get_id0(bool updated, int *out);
-    void get_level_id_limits(bool updated, unsigned lev, int *ids);
-    void get_bitid_list(bool updated, unsigned mort_min, unsigned mort_max, int *out);
+
+    // Refinement functions
     void refine_init();
     void refine_mark(unsigned bitid, bool value);
     void refine_reduce(MPI_Comm comm);
     void refine_reduce_and(MPI_Comm comm);
     void refine_update();
     void refine_apply();
+
+    // Other functions
     void print_2d(unsigned datatype=0);
 
   private:

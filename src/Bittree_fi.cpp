@@ -22,8 +22,10 @@ extern "C" void bittree_level_count(
     bool *updated,     //in: boolean
     int *count         //out
   ) {
-  if(!!the_tree)
-    *count = static_cast<int>(the_tree->level_count(*updated));
+  if(!!the_tree) {
+    auto tree = the_tree->getTree(*updated);
+    *count = static_cast<int>(tree->levels());
+  }
 }
 
 
@@ -32,8 +34,10 @@ extern "C" void bittree_block_count(
     bool *updated,     //in: boolean
     int *count         //out
   ) {
-  if(!!the_tree)
-    *count = static_cast<int>(the_tree->block_count(*updated));
+  if(!!the_tree) {
+    auto tree = the_tree->getTree(*updated);
+    *count = static_cast<int>(tree->blocks());
+  }
 }
 
 
@@ -42,8 +46,10 @@ extern "C" void bittree_leaf_count(
     bool *updated,     //in: boolean
     int *count         //out
   ) {
-  if(!!the_tree)
-    *count = static_cast<int>(the_tree->leaf_count(*updated));
+  if(!!the_tree) {
+    auto tree = the_tree->getTree(*updated);
+    *count = static_cast<int>(tree->leaves());
+  }
 }
 
 /** Wrapper function for delta_count */
@@ -72,12 +78,13 @@ extern "C" void bittree_is_parent(
     bool *parent_check  //out
   ) {
   unsigned bitid_u  = static_cast<unsigned>(*bitid);
-  if(!!the_tree)
-    *parent_check = the_tree->is_parent(*updated,bitid_u);
+  if(!!the_tree) {
+    auto tree = the_tree->getTree(*updated);
+    *parent_check = tree->block_is_parent(bitid_u);
+  }
 }
 
-/** Wrapper function for TheTree's identify, which 
-  * itself wraps MortonTree's identify */
+/** Wrapper function for MortonTree's identify */
 extern "C" void bittree_identify(
     bool *updated,      //in
     int *lev,           //inout (0-based)
@@ -85,12 +92,34 @@ extern "C" void bittree_identify(
     int *mort,          //out
     int *bitid          //out
   ) {
-  if(!!the_tree)
-    the_tree->identify(*updated, lev, ijk, mort, bitid);
+  unsigned coord[NDIM];
+  for(unsigned d=0; d < NDIM; d++)
+    coord[d] = static_cast<unsigned>( ijk[d]);
+  unsigned lev_u = static_cast<unsigned>(*lev);
+
+  if(!!the_tree) {
+    auto tree = the_tree->getTree(*updated);
+    if(tree->inside(lev_u, coord)) {
+      MortonTree::Block b = tree->identify(lev_u, coord);
+
+      *lev = static_cast<int>(b.level);
+      for(unsigned d=0; d < NDIM; d++)
+        ijk[d] = static_cast<int>(b.coord[d]);
+      *mort = static_cast<int>(b.mort);
+      *bitid = static_cast<int>(b.id);
+    }
+    else {
+      *lev = -1;
+      for(unsigned d=0; d < NDIM; d++)
+        ijk[d] = -1;
+      *mort = -1;
+      *bitid = -1;
+    }
+
+  }
 }
 
-/** Wrapper function for TheTree's locate, which 
-  * itself wraps MortonTree's locate */
+/** Wrapper function for MortonTree's locate */
 extern "C" void bittree_locate(
     bool *updated,      //in
     int *bitid,         //in
@@ -99,17 +128,35 @@ extern "C" void bittree_locate(
     int *mort          //out
   ) {
   unsigned bitid_u  = static_cast<unsigned>(*bitid);
-  if(!!the_tree)
-    the_tree->locate(*updated, bitid_u, lev, ijk, mort);
+
+  if(!!the_tree) {
+    auto tree = the_tree->getTree(*updated);
+    if(bitid_u < tree->id_upper_bound() ) {
+      MortonTree::Block b = tree->locate(bitid_u);
+
+      *lev = static_cast<int>(b.level);
+      for(unsigned d=0; d < NDIM; d++)
+        ijk[d] = static_cast<int>(b.coord[d]);
+      *mort = static_cast<int>(b.mort);
+    }
+    else {
+      *lev = -1;
+      for(unsigned d=0; d < NDIM; d++)
+        ijk[d] = -1;
+      *mort = -1;
+    }
+  }
 }
 
-/** Wrapper function for TheTree's get_id0 */
+/** Get id0 */
 extern "C" void bittree_get_id0(
     bool *updated,      //in
     int *idout          //out
   ) {
-  if(!!the_tree)
-    the_tree->get_id0(*updated, idout);
+  if(!!the_tree) {
+    auto tree = the_tree->getTree(*updated);
+    *idout = static_cast<int>(tree->level_id0(0));
+  }
 }
 
 /** Wrapper function for TheTree's get_level_id_limits */
@@ -119,8 +166,10 @@ extern "C" void bittree_level_bitid_limits(
     int *ids       //out
   ) {
   unsigned lev_u  = static_cast<unsigned>(*lev);
-  if(!!the_tree)
-    the_tree->get_level_id_limits(*updated, lev_u, ids);
+  if(!!the_tree) {
+    auto tree = the_tree->getTree(*updated);
+    tree->level_ids(lev_u,ids);
+  }
 }
 
 /** Wrapper function for TheTree's get_bitid_list, which 
@@ -133,8 +182,17 @@ extern "C" void bittree_get_bitid_list(
   ) {
   unsigned mort_min_u  = static_cast<unsigned>(*mort_min);
   unsigned mort_max_u  = static_cast<unsigned>(*mort_max);
-  if(!!the_tree)
-    the_tree->get_bitid_list(*updated, mort_min_u, mort_max_u, idout);
+  if(!!the_tree) {
+    auto tree = the_tree->getTree(*updated);
+#ifndef BITTREE_SAFE
+    tree->bitid_list(mort_min_u, mort_max_u, idout);
+#else
+    int outlist[(mort_max_u - mort_min_u)];
+    tree->bitid_list(mort_min_u, mort_max_u, outlist);
+    for (unsigned i=0;i<(mort_max_u - mort_min_u);i++)
+      idout[i] = outlist[i];
+#endif
+  }
 }
 
 /** Wrapper function for refine_init */
