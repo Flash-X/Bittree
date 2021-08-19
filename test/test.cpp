@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include "macros.h"
-#include "Bittree_core.h"
+#include "Bittree_fi.h"
 
 namespace {
 #if NDIM==1
