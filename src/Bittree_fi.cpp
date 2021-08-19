@@ -168,7 +168,8 @@ extern "C" void bittree_level_bitid_limits(
   unsigned lev_u  = static_cast<unsigned>(*lev);
   if(!!the_tree) {
     auto tree = the_tree->getTree(*updated);
-    tree->level_ids(lev_u,ids);
+    ids[0] = static_cast<int>(tree->level_id0(lev_u));
+    ids[1] = static_cast<int>(tree->level_id1(lev_u));
   }
 }
 

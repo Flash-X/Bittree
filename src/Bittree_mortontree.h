@@ -43,8 +43,8 @@ namespace bittree {
     unsigned top_size(unsigned dim) const;
     unsigned id_upper_bound() const;
     unsigned level_id0(unsigned lev) const;
+    unsigned level_id1(unsigned lev) const;
     unsigned level_blocks(unsigned lev) const;
-    void level_ids(unsigned lev, int *ids) const;
 
     // Other member functions
     bool block_is_parent(unsigned id) const;

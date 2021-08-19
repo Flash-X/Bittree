@@ -133,17 +133,13 @@ namespace bittree {
     return lev == 0 ? id0_ : level_[lev-1].id1;
   }
 
-  unsigned MortonTree::level_blocks(unsigned lev) const {
-    return level_[lev].id1 - (lev == 0 ? id0_ : level_[lev-1].id1);
+  /** \todo Inline this function? */
+  unsigned MortonTree::level_id1(unsigned lev) const {
+    return level_[lev].id1;
   }
 
-  /**
-    * \todo Adjust this interface - this is more of a Fortran layer thing
-    */
-  void MortonTree::level_ids(unsigned lev, int* ids) const {
-    ids[0] = static_cast<int>( level_id0(lev) );
-    ids[1] = static_cast<int>( level_[lev].id1 );
-    return;
+  unsigned MortonTree::level_blocks(unsigned lev) const {
+    return level_[lev].id1 - (lev == 0 ? id0_ : level_[lev-1].id1);
   }
 
   bool MortonTree::block_is_parent(unsigned id) const {
