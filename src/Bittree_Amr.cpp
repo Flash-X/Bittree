@@ -1,7 +1,18 @@
 #include "Bittree_Amr.h"
 
-using namespace bittree;
+namespace bittree {
 
+/** Constructor for BittreeAmr */
+BittreeAmr::BittreeAmr(const unsigned top[], const bool includes[]):
+  tree_(std::make_shared<MortonTree>(top, includes)),
+  is_reduced_(false),
+  is_updated_(false),
+  in_refine_(false)  {
+}
+
+/** Get shared_ptr to the actual Bittree.
+  * If in the middle of refinement, can also get the updated tree.
+  */
 std::shared_ptr<MortonTree> BittreeAmr::getTree(bool updated) {
   if(updated && in_refine_) {
     if (not is_updated_) refine_update();
@@ -12,23 +23,14 @@ std::shared_ptr<MortonTree> BittreeAmr::getTree(bool updated) {
   }
 }
 
-
-/** Constructor for BittreeAmr */
-BittreeAmr::BittreeAmr(const unsigned top[], const bool includes[]):
-  tree_(std::make_shared<MortonTree>(top, includes)),
-  is_reduced_(false),
-  is_updated_(false),
-  in_refine_(false)  {
-}
-
 /** Check number of blocks marked for nodetype change */
-unsigned BittreeAmr::delta_count() {
+unsigned BittreeAmr::delta_count() const {
   if(in_refine_) return refine_delta_->count();
   else return 0;
 }
 
 /** Check refinement bit. Wrapper for BitArray's get() */
-bool BittreeAmr::check_refine_bit(unsigned bitid) {
+bool BittreeAmr::check_refine_bit(unsigned bitid) const {
   if(in_refine_) return bool(refine_delta_->get(bitid));
   else return 0;
 }
@@ -118,7 +120,7 @@ void BittreeAmr::refine_apply() {
   * If tree has been updated, print both original and updated version. 
   * Can be passed a datatype to change what number prints at each block loc. 
   * (0=bitid, 1=morton number, 2=parentage) */
-void BittreeAmr::print_2d(unsigned datatype) {
+void BittreeAmr::print_2d(unsigned datatype) const {
   if (NDIM==2) { 
     switch (datatype) {
       case 0: 
@@ -157,6 +159,8 @@ void BittreeAmr::print_2d(unsigned datatype) {
   else {
     std::cout << "Error: tried to print 2d Bittree but NDIM is not 2!" <<std::endl;
   }
+}
+
 }
 
 

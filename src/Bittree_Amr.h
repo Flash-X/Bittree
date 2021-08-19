@@ -1,11 +1,11 @@
-#ifndef BITTREE_CORE_H__
-#define BITTREE_CORE_H__
+#ifndef BITTREE_AMR_H__
+#define BITTREE_AMR_H__
 
 #include "Bittree_bitarray.h"
 #include "Bittree_mortontree.h"
 #include "mpi.h"
 
-using namespace bittree;
+namespace bittree {
   
 class BittreeAmr  {
   public:
@@ -14,8 +14,8 @@ class BittreeAmr  {
     std::shared_ptr<MortonTree> getTree(bool updated=false);
 
     // Get refinement info
-    unsigned delta_count();
-    bool check_refine_bit(unsigned bitid);
+    unsigned delta_count() const;
+    bool check_refine_bit(unsigned bitid) const;
 
     // Refinement functions
     void refine_init();
@@ -26,7 +26,7 @@ class BittreeAmr  {
     void refine_apply();
 
     // Other functions
-    void print_2d(unsigned datatype=0);
+    void print_2d(unsigned datatype=0) const;
 
   private:
     std::shared_ptr<MortonTree> tree_;            //!<Actual Bittree
@@ -36,6 +36,7 @@ class BittreeAmr  {
     bool is_updated_;  //!<Flag to track whether tree_updated matches latest refine_delta
     bool in_refine_;   //!<If in_refine=false, tree_updated and refine_delta should not exist
   };
-  
+
+}
 
 #endif

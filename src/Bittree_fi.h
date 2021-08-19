@@ -3,6 +3,8 @@
 
 #include "Bittree_Amr.h"
 
+using namespace bittree;
+
 namespace {
     std::shared_ptr<BittreeAmr> the_tree;
 }
