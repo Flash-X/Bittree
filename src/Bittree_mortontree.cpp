@@ -426,7 +426,6 @@ namespace bittree {
     static const std::vector<std::string> dtypes { "bitid", "mort", "parent" };
 
     unsigned k = K3D*slice;
-    DBG_ASSERT(NDIM==2);
 
     std::ostringstream buffer;
     buffer << "Bittree, datatype=" << dtypes[datatype];
@@ -437,29 +436,43 @@ namespace bittree {
     for(unsigned lev=0; lev < levs; lev++) {
       buffer << "lev=" << lev <<'\n';
       
-      unsigned ij[2];
-      for(ij[1]=0; ij[1] < top_size(1)<<lev; ij[1]++) {
-        for(ij[0]=0; ij[0] < top_size(0)<<lev; ij[0]++) {
-          if(inside(lev, ij)) {
-            MortonTree::Block b0 = identify(lev, ij);
+      unsigned xlim = top_size(0)<<lev;
+      unsigned ylim = ((top_size(1)<<lev) - 1)*K2D + 1;
+      std::vector<unsigned> coord(NDIM);
+      coord[2] = k; //slice
+      for(  unsigned j=0; j < ylim; ++j) {
+        if(NDIM>=2) coord[1] = j;
+        for(unsigned i=0; i < xlim; ++i) {
+          if(NDIM>=1) coord[0] = i;
+
+          if(inside(lev, coord.data())) {
+            MortonTree::Block b0 = identify(lev, coord.data());
             MortonTree::Block b1 = locate(b0.id);
+
             DBG_ASSERT(b0.id == b1.id);
             DBG_ASSERT(b0.level == b1.level);
             DBG_ASSERT(b0.mort == b1.mort);
-            DBG_ASSERT(b0.coord[0] == b1.coord[0] && b0.coord[1] == b1.coord[1]);
-            switch(datatype) {
-              case 0:
-                buffer << std::setw(4) << b0.id;         //print bittree id number
-                break;
-              case 1: 
-                buffer << std::setw(4) << (b0.mort+1);   //print 1-based morton number
-                break;
-              case 2: 
-                buffer << std::setw(4) << block_is_parent(b0.id); //print block parentage
-                break;
+            for(unsigned n=0; n<NDIM; ++n) {
+              DBG_ASSERT(b0.coord[n] == b1.coord[n]);
             }
+
+            if(b0.level==lev) {
+              switch(datatype) {
+                case 0:
+                  buffer << std::setw(4) << b0.id;        //print bittree id number
+                  break;
+                case 1:
+                  buffer << std::setw(4) << b0.mort;      //print 0-based morton number
+                  break;
+                case 2:
+                  buffer << std::setw(4) << b0.is_parent; //print block parentage
+                  break;
+              }
+            }
+            else //no block on this level
+              buffer << std::setw(4) << '.';
           }
-          else
+          else //not inside domain
             buffer << std::setw(4) << ' ';
         }
         buffer << '\n';

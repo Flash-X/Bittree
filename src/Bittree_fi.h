@@ -120,7 +120,7 @@ extern "C" void bittree_refine_update();
 /** Wrapper function for refine_apply */
 extern "C" void bittree_refine_apply();
 
-/** Wrapper function the print_2d */
-extern "C" void bittree_print_2d(int *datatype=0);
+/** print (slice=0) */
+extern "C" void bittree_print(int *datatype=0);
 
 #endif

@@ -241,9 +241,10 @@ extern "C" void bittree_refine_apply() {
 }
 
 /** Wrapper function the print_2d */
-extern "C" void bittree_print_2d(int *datatype)
+extern "C" void bittree_print(int *datatype)
 {
   unsigned dtype_u = static_cast<unsigned>(*datatype);
-  if(!!the_tree)
-    the_tree->print_2d(dtype_u) ;
+  if(!!the_tree) {
+    std::cout << the_tree->slice_to_string(dtype_u);
+  }
 }

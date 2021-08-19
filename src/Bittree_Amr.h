@@ -26,7 +26,7 @@ class BittreeAmr  {
     void refine_apply();
 
     // Other functions
-    void print_2d(unsigned datatype, unsigned slice=0) const;
+    std::string slice_to_string(unsigned datatype, unsigned slice=0) const;
 
   private:
     std::shared_ptr<MortonTree> tree_;            //!<Actual Bittree

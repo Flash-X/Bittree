@@ -1,4 +1,5 @@
 #include "Bittree_Amr.h"
+#include <sstream>
 
 namespace bittree {
 
@@ -95,11 +96,6 @@ void BittreeAmr::refine_update() {
   if (not is_reduced_) {
     std::cout << "Bittree updating before reducing. Possible error." << std::endl;
   }
-  //std::cout << "refine_delta_->length() = " << refine_delta_->length() << std::endl;
-  //for (unsigned j=0; j<refine_delta_->length() ; j++){
-  //  std::cout << j << ": " << refine_delta_->get(j) << ";  " ;
-  //}
-  //std::cout << std::endl;
   tree_updated_ = tree_->refine(refine_delta_);
   is_updated_ = true;
 }
@@ -115,32 +111,35 @@ void BittreeAmr::refine_apply() {
   in_refine_ = false;
 }
 
-/** Wrapper function to MortonTree's print_if_2d, which print a nice 
-  * representation of the (2d) Bittree and refine_delta_. 
-  * If tree has been updated, print both original and updated version. 
-  * Can be passed a datatype to change what number prints at each block loc. 
+/** Wrapper function to MortonTree's print_slice, which print a nice
+  * representation of the Bittree and refine_delta_.
+  * If tree has been updated, print both original and updated version.
+  * Can be passed a datatype to change what number prints at each block loc.
   * (0=bitid, 1=morton number, 2=parentage) */
-void BittreeAmr::print_2d(unsigned datatype, unsigned slice) const {
-  if (NDIM==2 && (datatype==0 || datatype==1 || datatype==2)) { 
-    std::cout << "printing original tree:" <<std::endl;
-    std::cout << tree_->print_slice(datatype,slice) << std::endl;
+std::string BittreeAmr::slice_to_string(unsigned datatype, unsigned slice) const {
+  std::ostringstream buffer;
+  if (datatype==0 || datatype==1 || datatype==2) {
+    buffer << "printing original tree:\n";
+    buffer << tree_->print_slice(datatype,slice) << "\n";
 
     if(in_refine_) {
-    std::cout << "printing refine_delta_ (indexed by bitid):" <<std::endl;
-    for (unsigned j=0; j<refine_delta_->length() ; j++){
-      std::cout << j << ": " << refine_delta_->get(j) << ";  " ;
+    buffer << "printing refine_delta_ (indexed by bitid):\n";
+    unsigned id0 = tree_->level_id0(0);
+    for (unsigned j=id0; j<refine_delta_->length() ; j++){
+      buffer << j << ": " << refine_delta_->get(j) << ";  " ;
     }
-    std::cout << std::endl;
+    buffer << "\n\n";
     }
 
     if (in_refine_ && is_updated_) {
-      std::cout << "printing updated tree:" <<std::endl;
-      std::cout << tree_updated_->print_slice(datatype,slice) << std::endl;
+      buffer << "printing updated tree:\n";
+      buffer << tree_updated_->print_slice(datatype,slice) << "\n";
     }
   }
   else {
-    std::cout << "Error: datatype must be 0(bitid), 1(mort), or 2(parent)!" <<std::endl;
+    buffer << "Error: datatype must be 0(bitid), 1(mort), or 2(parent)!\n";
   }
+  return buffer.str();
 }
 
 }

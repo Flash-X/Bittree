@@ -367,8 +367,8 @@ TEST_F(BittreeUnitTest,BittreeCore){
     // TODO
 
     // Test print_2d
-    int dtype = 0;
-    bittree_print_2d(&dtype);
+    int dtype = 1;
+    bittree_print(&dtype);
 
     bittree_refine_apply();
 
