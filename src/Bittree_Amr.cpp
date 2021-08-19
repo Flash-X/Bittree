@@ -1,10 +1,20 @@
-#include "Bittree_core.h"
+#include "Bittree_Amr.h"
 
 using namespace bittree;
 
+std::shared_ptr<MortonTree> BittreeAmr::getTree(bool updated) {
+  if(updated && in_refine_) {
+    if (not is_updated_) refine_update();
+    return tree_updated_;
+  }
+  else {
+    return tree_;
+  }
+}
 
-/** Constructor for TheTree */
-TheTree::TheTree(const unsigned top[], const bool includes[]):
+
+/** Constructor for BittreeAmr */
+BittreeAmr::BittreeAmr(const unsigned top[], const bool includes[]):
   tree_(std::make_shared<MortonTree>(top, includes)),
   is_reduced_(false),
   is_updated_(false),
@@ -12,7 +22,7 @@ TheTree::TheTree(const unsigned top[], const bool includes[]):
 }
 
 /** Check level count of Bittree. Wrapper for MortonTree's levels() */
-unsigned TheTree::level_count(bool updated) {
+unsigned BittreeAmr::level_count(bool updated) {
   if(updated && in_refine_) {
     if (not is_updated_) refine_update();
     return tree_updated_->levels();
@@ -22,7 +32,7 @@ unsigned TheTree::level_count(bool updated) {
 }
 
 /** Check block count of Bittree. Wrapper for MortonTree's blocks() */
-unsigned TheTree::block_count(bool updated) {
+unsigned BittreeAmr::block_count(bool updated) {
   if(updated && in_refine_) {
     if (not is_updated_) refine_update();
     return tree_updated_->blocks();
@@ -32,7 +42,7 @@ unsigned TheTree::block_count(bool updated) {
 }
 
 /** Check block count of Bittree. Wrapper for MortonTree's leaves() */
-unsigned TheTree::leaf_count(bool updated) {
+unsigned BittreeAmr::leaf_count(bool updated) {
   if(updated && in_refine_) {
     if (not is_updated_) refine_update();
     return tree_updated_->leaves();
@@ -41,20 +51,20 @@ unsigned TheTree::leaf_count(bool updated) {
     return tree_->leaves();
 }
 /** Check number of blocks marked for nodetype change */
-unsigned TheTree::delta_count() {
+unsigned BittreeAmr::delta_count() {
   if(in_refine_) return refine_delta_->count();
   else return 0;
 }
 
 /** Check refinement bit. Wrapper for BitArray's get() */
-bool TheTree::check_refine_bit(unsigned bitid) {
+bool BittreeAmr::check_refine_bit(unsigned bitid) {
   if(in_refine_) return bool(refine_delta_->get(bitid));
   else return 0;
 }
 
 
 /** Wrapper for MortonTree's block_is_parent */ 
-bool TheTree::is_parent(bool updated, unsigned bitid) {
+bool BittreeAmr::is_parent(bool updated, unsigned bitid) {
   if (updated && in_refine_){
     if (not is_updated_) refine_update();
     return tree_updated_->block_is_parent(bitid);
@@ -66,7 +76,7 @@ bool TheTree::is_parent(bool updated, unsigned bitid) {
 /** Identify a block based on its integer coordinates and level of refinement. 
  *  If no block exists on the level specified, Return the block on the finest level
  *  possible. */
-void TheTree::identify(
+void BittreeAmr::identify(
     bool updated,        //in
     int *lev,            //inout (0-based)
     int *ijk,            //inout 
@@ -113,7 +123,7 @@ void TheTree::identify(
 
 /** Return location information about a block based on its bitid number. (Location in Bittree) 
  *   */
-void TheTree::locate(
+void BittreeAmr::locate(
     bool updated,        //in
     unsigned bitid,           //in
     int *lev,            //out (0-based)
@@ -154,7 +164,7 @@ void TheTree::locate(
   }
 }
 
-void TheTree::get_id0(
+void BittreeAmr::get_id0(
     bool updated,       //in
     int *out      //out
     ) {
@@ -167,7 +177,7 @@ void TheTree::get_id0(
   }
 }
 
-void TheTree::get_level_id_limits(
+void BittreeAmr::get_level_id_limits(
     bool updated,   //in
     unsigned lev,        //in
     int *ids        //out
@@ -182,7 +192,7 @@ void TheTree::get_level_id_limits(
 }
 
 /** Wrapper for MortonTree's bitid_list */
-void TheTree::get_bitid_list(
+void BittreeAmr::get_bitid_list(
     bool updated,       //in
     unsigned mort_min,  //in
     unsigned mort_max,  //in
@@ -213,7 +223,7 @@ void TheTree::get_bitid_list(
 
 /** Creates refine_delta_, and initializes all values to False.
   * First step of refinement. */
-void TheTree::refine_init() {
+void BittreeAmr::refine_init() {
   unsigned nbits = tree_->id_upper_bound();
   refine_delta_ = std::make_shared<BitArray>(nbits);
   refine_delta_->fill(false);
@@ -223,7 +233,7 @@ void TheTree::refine_init() {
 }
 
 /** Mark a bit on refine_delta_ */
-void TheTree::refine_mark(
+void BittreeAmr::refine_mark(
     unsigned bitid,   // in
     bool value   // in
   ) {
@@ -235,7 +245,7 @@ void TheTree::refine_mark(
 
 /** Reduce refine_delta_ across all processors by ORing. This means
  *  any blocks marked on one processor will be marked on all. */
-void TheTree::refine_reduce(MPI_Comm comm) {
+void BittreeAmr::refine_reduce(MPI_Comm comm) {
   int count = static_cast<int>(refine_delta_->word_count());
   MPI_Allreduce(
     MPI_IN_PLACE,
@@ -250,7 +260,7 @@ void TheTree::refine_reduce(MPI_Comm comm) {
 
 /** Reduce refine_delta_ across all processors by ANDing. This means
  *  any blocks unmarked on one processor will be unmarked on all. */
-void TheTree::refine_reduce_and(MPI_Comm comm) {
+void BittreeAmr::refine_reduce_and(MPI_Comm comm) {
   int count = static_cast<int>(refine_delta_->word_count());
   MPI_Allreduce(
     MPI_IN_PLACE,
@@ -265,7 +275,7 @@ void TheTree::refine_reduce_and(MPI_Comm comm) {
 
 /** Generates the updated tree from the original tree + refine_delta_.
   * After call, both original and updated exist simultaneously. */
-void TheTree::refine_update() {
+void BittreeAmr::refine_update() {
   if (not is_reduced_) {
     std::cout << "Bittree updating before reducing. Possible error." << std::endl;
   }
@@ -279,7 +289,7 @@ void TheTree::refine_update() {
 }
 
 /** Makes the updated tree the original tree. Final step of refinement. */
-void TheTree::refine_apply() {
+void BittreeAmr::refine_apply() {
   if (not is_updated_) {
     refine_update();
   }
@@ -294,7 +304,7 @@ void TheTree::refine_apply() {
   * If tree has been updated, print both original and updated version. 
   * Can be passed a datatype to change what number prints at each block loc. 
   * (0=bitid, 1=morton number, 2=parentage) */
-void TheTree::print_2d(unsigned datatype) {
+void BittreeAmr::print_2d(unsigned datatype) {
   if (NDIM==2) { 
     switch (datatype) {
       case 0: 

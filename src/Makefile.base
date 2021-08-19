@@ -7,7 +7,7 @@ CXXFLAGS_BASE    = -I$(INCDIR)
 HEADERS_BASE = \
     $(INCDIR)/Bittree_bitarray.h \
     $(INCDIR)/Bittree_bits.h \
-    $(INCDIR)/Bittree_core.h \
+    $(INCDIR)/Bittree_Amr.h \
     $(INCDIR)/Bittree_mortontree.h \
     $(INCDIR)/Bittree_prelude.h \
     $(INCDIR)/Bittree_fi.h
@@ -15,5 +15,5 @@ HEADERS_BASE = \
 SRCS_BASE    = \
     $(SRCDIR)/Bittree_bitarray.cpp \
     $(SRCDIR)/Bittree_mortontree.cpp \
-    $(srcdir)/Bittree_core.cpp \
+    $(srcdir)/Bittree_Amr.cpp \
     $(srcdir)/Bittree_fi.cpp

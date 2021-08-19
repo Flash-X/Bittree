@@ -1,10 +1,10 @@
 #ifndef BITTREE_FI_H__
 #define BITTREE_FI_H__
 
-#include "Bittree_core.h"
+#include "Bittree_Amr.h"
 
 namespace {
-    std::shared_ptr<TheTree> the_tree;
+    std::shared_ptr<BittreeAmr> the_tree;
 }
 
 /** Checks if the_tree has been created */

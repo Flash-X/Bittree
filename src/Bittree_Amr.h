@@ -4,13 +4,14 @@
 #include "Bittree_bitarray.h"
 #include "Bittree_mortontree.h"
 #include "mpi.h"
-#include <iostream>
 
 using namespace bittree;
   
-  class TheTree  {
+class BittreeAmr  {
   public:
-    TheTree(const unsigned top[], const bool includes[]);
+    BittreeAmr(const unsigned top[], const bool includes[]);
+
+    std::shared_ptr<MortonTree> getTree(bool updated=false);
 
     unsigned level_count(bool updated);
     unsigned block_count(bool updated);

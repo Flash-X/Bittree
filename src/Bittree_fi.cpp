@@ -1,5 +1,4 @@
 #include "Bittree_fi.h"
-#include "Bittree_core.h"
 
 /** Checks if the_tree has been created */
 extern "C" bool bittree_initialized() {
@@ -15,7 +14,7 @@ extern "C" void bittree_init(
   for(int d=0; d < NDIM; d++)
     top[d] = static_cast<unsigned>(topsize[d]);
  
-  the_tree = std::make_shared<TheTree>(top,includes);
+  the_tree = std::make_shared<BittreeAmr>(top,includes);
 }
 
 /** Wrapper function for block_count */
