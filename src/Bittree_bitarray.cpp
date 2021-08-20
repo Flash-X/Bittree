@@ -55,12 +55,13 @@ namespace bittree {
     return w1 != w0;
   }
 
-  /** count 1's in interval [ix0,ix1) */
+  /** count 1's in whole array */
   unsigned BitArray::count() const {
     return count(0, len_);
   }
 
-  /** count 1's in whole array */
+  /** count 1's in interval [ix0,ix1)
+   * \todo add protection in case of out of bounds */
   unsigned BitArray::count(unsigned ix0, unsigned ix1) const {
     if(ix1 <= ix0) return 0;
     unsigned iw0 = ix0 >> logw;
@@ -210,30 +211,44 @@ namespace bittree {
     a_->wbuf_[ix_>>logw] = w_;
   }
 
+  /** Constructor for FastBitArray.
+    */
   FastBitArray::FastBitArray(unsigned len):
-    BitArray{len},
-    chks_{len>>logc} {
+    BitArray(len),
+    chks_(len>>logc) {
   }
 
-  FastBitArray::Builder::Builder(unsigned len_):
-    a_(std::make_shared<FastBitArray>(len_)),
+  FastBitArray::Builder::Builder(unsigned len):
+    a_(std::make_shared<FastBitArray>(len)),
     w_(BitArray::Writer(a_, 0)),
     chkpop_(0),
-    pchk_(a_->chks_) {
+    pchk_(a_->chks_.data()) {
   }
 
+  /** Wraps BitArray::Writer::write<n>, but also tracks cumulative
+    * bitpop so FastBitArray can store it at intervals of bitc (=2^9).
+    *
+    * \todo combine branching statements if((ix&(bitc-1u))+n >= bitc)
+    * \todo isolate n bits? (in case x is >= 2^n) )
+    */
   template<unsigned n>
   void FastBitArray::Builder::write(WType x) {
     unsigned ix = w_.index();
+    // NOTE: ix&(bitc-1u) = ix mod bitc
+    // So this checks if the current index is within n bits
+    //   of a checkpoint (where ix mod bitc = 0, ix/bitc = k).
     if((ix&(bitc-1u))+n >= bitc) {
+      // Store cumulative bitpop up to bitc*2^k
       if(n == 1)
-        pchk_.push_back( chkpop_ + static_cast<unsigned>(x) );
+        *pchk_++ = ( chkpop_ + static_cast<unsigned>(x) );
       else {
         WType m = ~WType(0) >> (bitw-(bitc-(ix&(bitc-1u))));
-        pchk_.push_back( chkpop_ + static_cast<unsigned>(bitpop(x & m)) );
+        *pchk_++ = ( chkpop_ + static_cast<unsigned>(bitpop(x & m)) );
       }
     }
+    // Keep track of total bitpop so far
     chkpop_ += n == 1 ? x : static_cast<unsigned>(bitpop(x));
+    // Actually write bits
     w_.write<n>(x);
   }
 
@@ -242,10 +257,19 @@ namespace bittree {
     return a_;
   }
 
+  /** A theoretically faster algorithm for count making use of the cached cumulative pops
+    * \todo Performance testing
+    */
   unsigned FastBitArray::count(unsigned ix0, unsigned ix1) const {
+    // If ix0 and ix1 are separated by over bitc bits, can use the chks_ array
+    // to shorten the length to count.
     if(ix1>>logc > ix0>>logc) {
+      // pop0 = total count up to next multiple of bitc (inclusive)
+      // pop1 = total count up to previous multiple of bitc (exclusive)
       unsigned pop0 = ix0 == 0 ? 0 : chks_[((ix0+bitc-1u)>>logc)-1];
       unsigned pop1 = chks_[(ix1>>logc)-1];
+      // (ix0+bitc-1u) & ~(bitc-1u) = the next multiple of bitc (inclusive)
+      // ix1 & ~(bitc-1u) = the prevoius multiple of bitc (exclusive)
       return
         BitArray::count(ix0, (ix0+bitc-1u) & ~(bitc-1u)) +
         (pop1 - pop0) +

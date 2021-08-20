@@ -66,10 +66,6 @@ protected:
     }
 
     ~BittreeUnitTest(void) {
-        bool updated = true;
-        int count;
-        bittree_block_count(&updated, &count);
-        std::cout << "End of test block count=" << count << std::endl;
     }
 };
 
@@ -171,6 +167,9 @@ TEST_F(BittreeUnitTest,RefinementTest){
       }}}
     }
 
+    updated = true;
+    bittree_block_count(&updated, &count);
+    std::cout << "End of test block count=" << count << std::endl;
 
 }
 
@@ -380,6 +379,54 @@ TEST_F(BittreeUnitTest,BittreeCore){
     bitid = id0;
     bittree_check_refine_bit(&bitid,&val);
     ASSERT_EQ( val, false);
+
+    updated = true;
+    bittree_block_count(&updated, &count);
+    std::cout << "End of test block count=" << count << std::endl;
+}
+
+
+TEST_F(BittreeUnitTest,CppInterface){
+    unsigned top[NDIM] = {LIST_NDIM(1,1,1)};
+    bool includes[1] = {true};
+    BittreeAmr bt = BittreeAmr(top,includes);
+
+    unsigned iterations=7;
+    unsigned lev,xlim,ylim,zlim,numpars=0;
+    unsigned ijk[3];
+    std::shared_ptr<MortonTree> tree;
+    for(unsigned iter=0; iter<iterations; ++iter) {
+      bt.refine_init();
+      tree = bt.getTree();
+      lev = iter;
+      xlim = ((1u<<iter) - 1)*K1D + 1;
+      ylim = ((1u<<iter) - 1)*K2D + 1;
+      zlim = ((1u<<iter) - 1)*K3D + 1;
+      for(    unsigned k=0; k<zlim; ++k) {
+        for(  unsigned j=0; j<ylim; ++j) {
+          for(unsigned i=0; i<xlim; ++i) {
+            if(!(i<=xlim/2 && j<=ylim/2 && k<=zlim/2)) continue;
+            ijk[0]=i; ijk[1]=j; ijk[2]=k;
+            MortonTree::Block b = tree->identify(lev,ijk);
+            bt.refine_mark(b.id,true);
+            numpars++;
+      }}}
+      bt.refine_update();
+      bt.refine_apply();
+      //if(iter==3) std::cout << bt.slice_to_string(2);
+    }
+
+    //if(iterations<=4) std::cout << bt.slice_to_string(2,0);
+
+    tree = bt.getTree();
+    auto bits = tree->bits_;
+    std::cout << "End of test block count=" << tree->blocks() << std::endl;
+    std::cout << "End of test bit length=" << bits->length() << std::endl;
+    auto id0 = tree->level_id0(0);
+    auto id1 = tree->level_id0(iterations);
+    ASSERT_EQ( bits->count(id0,id1), numpars);
+
+
 }
 
 }

@@ -54,7 +54,9 @@ void BittreeAmr::refine_mark(
     unsigned bitid,   // in
     bool value   // in
   ) {
-  refine_delta_->set(bitid, value);
+  if(in_refine_) {
+      refine_delta_->set(bitid, value);
+  }
   is_reduced_ = false;
   is_updated_ = false;
 }

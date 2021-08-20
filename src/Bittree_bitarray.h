@@ -115,14 +115,15 @@ namespace bittree {
     private:
       std::shared_ptr<FastBitArray> a_;
       BitArray::Writer w_;
-      unsigned chkpop_;
-      std::vector<unsigned> pchk_;
+      unsigned chkpop_; //cumulative 1-bits written so far
+      unsigned* pchk_; //pointer into chks_
     };
 
     unsigned count(unsigned ix0, unsigned ix1) const override;
     unsigned find(unsigned ix0, unsigned nth) const override;
 
   protected:
+    //chks_.size() = len_>>logc; chks_[i] = count(id0,id0+(bitc<<i) )
     std::vector<unsigned> chks_;
   };
 }

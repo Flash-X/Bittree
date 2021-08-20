@@ -62,11 +62,12 @@ namespace bittree {
     unsigned parents_before(unsigned lev, unsigned ix) const;
     unsigned parent_find(unsigned lev, unsigned par_ix) const;
 
+  public:
+    std::shared_ptr<FastBitArray> bits_;   //!< Data
   private:
     // Member variables
     unsigned levs_;                        //!< Current number of levels
     unsigned lev0_blks_[NDIM];             //!< Number of top level blocks
-    std::shared_ptr<FastBitArray> bits_;   //!< Data
     unsigned id0_;                         //!< id of first block
     std::vector<LevelStruct> level_;       //!< Upper bound on ids for each level
   };
