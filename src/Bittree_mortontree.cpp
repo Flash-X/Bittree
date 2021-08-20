@@ -1,10 +1,7 @@
 #include "Bittree_mortontree.h"
 
-#include "Bittree_bitarray.h"
 #include "Bittree_bits.h"
 
-#include <algorithm>
-#include <limits>
 #include <iomanip>
 #include <sstream>
 
@@ -166,7 +163,8 @@ namespace bittree {
   }
   
   /** Identifies morton number of a block corresponding to given coords
-   *  on the current tree.  */
+   *  on the current tree.*
+   *  \todo error check block is inside domain */
   MortonTree::Block
   MortonTree::identify(unsigned lev, const unsigned x[NDIM]) const {
     const std::shared_ptr<BitArray> bits_a = bits_; // use this for bit access
@@ -176,11 +174,9 @@ namespace bittree {
       unsigned x0[NDIM];
       for(unsigned d=0; d < NDIM; d++) {
         x0[d] = unsigned(x[d] >> lev); // coarsen x to top level
-        DBG_ASSERT(x0[d] < lev0_blks_[d]);
         ans.coord[d] = unsigned(x0[d]);
       }
       ix = rect_coord_to_mort(lev0_blks_, x0);
-      DBG_ASSERT(bits_a->get(ix));
       ix = bits_->count(0, ix); // discount excluded blocks
     }
     ans.mort = 0;
@@ -353,6 +349,9 @@ namespace bittree {
     return bits_->find(level_id0(lev), par_ix);
   }
 
+  /**
+    * \todo error check on mort min, max
+    */
   void MortonTree::bitid_list(unsigned mort_min, unsigned mort_max, int *out ) const {
     bool is_par; 
     unsigned ix = id0_;           //current scan index
@@ -360,10 +359,8 @@ namespace bittree {
     bool childrenDone[levs_];
     unsigned pos[levs_]; //location on each level (increases monotonically)
     unsigned mort = 0;
-#ifdef FLASH_DEBUG_BITTREE
-    DBG_ASSERT(mort_max <= blocks());
-    DBG_ASSERT(mort_min <= mort_max);
-#endif
+    //DBG_ASSERT(mort_max <= blocks());
+    //DBG_ASSERT(mort_min <= mort_max);
 
     for (unsigned i=0; i<levs_; i++){
       childrenDone[i] = false;
@@ -422,6 +419,9 @@ namespace bittree {
     }
   }
 
+  /**
+    * \todo implement a verify method to replace the error checking here?
+    */
   std::string MortonTree::print_slice(unsigned datatype, unsigned slice) const {
     static const std::vector<std::string> dtypes { "bitid", "mort", "parent" };
 
@@ -447,14 +447,14 @@ namespace bittree {
 
           if(inside(lev, coord.data())) {
             MortonTree::Block b0 = identify(lev, coord.data());
-            MortonTree::Block b1 = locate(b0.id);
+            //MortonTree::Block b1 = locate(b0.id);
 
-            DBG_ASSERT(b0.id == b1.id);
-            DBG_ASSERT(b0.level == b1.level);
-            DBG_ASSERT(b0.mort == b1.mort);
-            for(unsigned n=0; n<NDIM; ++n) {
-              DBG_ASSERT(b0.coord[n] == b1.coord[n]);
-            }
+            //DBG_ASSERT(b0.id == b1.id);
+            //DBG_ASSERT(b0.level == b1.level);
+            //DBG_ASSERT(b0.mort == b1.mort);
+            //for(unsigned n=0; n<NDIM; ++n) {
+            //  DBG_ASSERT(b0.coord[n] == b1.coord[n]);
+            //}
 
             if(b0.level==lev) {
               switch(datatype) {

@@ -1,5 +1,7 @@
 #include "Bittree_fi.h"
 
+#include <iostream>
+
 /** Checks if the_tree has been created */
 extern "C" bool bittree_initialized() {
   return !!the_tree;

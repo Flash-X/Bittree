@@ -1,5 +1,6 @@
 #include "Bittree_Amr.h"
 #include <sstream>
+#include <iostream>
 
 namespace bittree {
 

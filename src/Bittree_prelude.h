@@ -1,6 +1,6 @@
 /** \brief Basic includes and defining Log
  *
- *  Includes basic libraries such as cstdlib, iostream, etc.
+ *  Includes basic libraries.
  *  Sets up a Logarithm function that has size_t as its input and output type
  */
 
@@ -8,16 +8,11 @@
 #define BITTREE_PRELUDE_H__
 
 #include <cstddef>
-#include <cstdlib>
 #include <climits>
-#include <exception>
+#include <stdexcept>
 #include <memory>
 #include <vector>
-#include <cstring>
-#include <iostream>
-
-#define DBG_ASSERT(x) if(!(x)) { std::cout << "FAILED " __FILE__ "@" << __LINE__ << ": " #x << std::endl; abort(); }
-#define RT_ASSERT(x) if(!(x)) { std::cout << "FAILED " __FILE__ "@" << __LINE__ << ": " #x << std::endl; abort(); }
+#include <string>
 
 namespace bittree {
 

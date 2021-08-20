@@ -1,12 +1,8 @@
 #ifndef BITTREE_MORTONTREE_H__
 #define BITTREE_MORTONTREE_H__
 
-#include "Bittree_prelude.h"
 #include "Bittree_bitarray.h"
-
 #include "Bittree_constants.h"
-
-#include <iostream>
 
 namespace bittree {
   unsigned rect_coord_to_mort(const unsigned domain[NDIM], const unsigned coord[NDIM]);

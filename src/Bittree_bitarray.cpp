@@ -124,10 +124,10 @@ namespace bittree {
     fill(x, 0, len_);
   }
 
-  /** Fill part of Bit Array */
+  /** Fill part of Bit Array
+   * \todo bounds check*/
   void BitArray::fill(bool x, unsigned ix0, unsigned ix1) {
     if(ix0 >= ix1) return;
-    DBG_ASSERT(ix1 <= len_);
     unsigned iw0 = ix0 >> logw, iw1 = (ix1-1) >> logw;
     WType z = x ? WType(0) : ones;
     WType m = ones << (ix0 & (bitw-1));
@@ -187,10 +187,10 @@ namespace bittree {
     flush();
   }
 
-  /** Write n values to array */
+  /** Write n values to array
+   * \todo Assert ix_ + n <= a_->length() */
   template<unsigned n>
   void BitArray::Writer::write(BitArray::WType x) {
-    DBG_ASSERT(ix_ + n <= a_->length());
     if(((ix_+n)&(bitw-1u)) > (ix_&(bitw-1u))) {
       WType m = ((one<<n)-one)<<(ix_&(bitw-1u));
       w_ = (w_ & ~m) | x<<(ix_&(bitw-1u));
