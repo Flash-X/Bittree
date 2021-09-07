@@ -1,5 +1,5 @@
-#ifndef BTFUNC_H__
-#define BTFUNC_H__
+#ifndef BTUNIT_H__
+#define BTUNIT_H__
 
 #include <Bittree_Amr.h>
 #include "constants.h"
@@ -7,16 +7,18 @@
 using namespace bittree;
 
 class btUnit {
-    public:
-
-
-    // Functions
+  // Functions
+  public:
     static void btRefineInitialize( std::shared_ptr<BittreeAmr> mesh );
     static void btRefineFinalize( std::shared_ptr<BittreeAmr> mesh );
+    static void btCheckRefine( std::shared_ptr<BittreeAmr> mesh );
+    static void btCheckDerefine( std::shared_ptr<BittreeAmr> mesh );
 
+  private:
+    static std::vector<int> calcNeighIntCoords(unsigned lev, unsigned* lcoord, int* gCell, std::shared_ptr<BittreeAmr> mesh);
 
-    private:
-    // cache of mesh data
+  // cache of mesh data
+  private:
     static std::vector<bool> refine;
     static std::vector<bool> derefine;
     static std::vector<std::vector<unsigned>> lcoord;

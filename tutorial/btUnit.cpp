@@ -1,5 +1,6 @@
 #include "btUnit.h"
 #include <iostream>
+#include <functional>
 
 // static variable initialization
 std::vector<bool> btUnit::refine;
@@ -55,9 +56,13 @@ void btUnit::btRefineInitialize( std::shared_ptr<BittreeAmr> mesh ) {
         bitid[blkID] = b.id;
 
         // Estimate error
-        unsigned error_calc_result;
+        double error_calc_result;
         for(unsigned v=0; v<NVARS; ++v) {
-            error_calc_result = 0; // replace with actual calculation
+            // TODO replace with actual calculation
+            error_calc_result = 0; 
+            for(unsigned d=0; d<NDIM; ++d)
+              if(lcoord[blkID][d]==0) error_calc_result += 1.0/NDIM;
+
             error[blkID][v] = error_calc_result;
         }
     }
@@ -87,18 +92,18 @@ void btUnit::btRefineInitialize( std::shared_ptr<BittreeAmr> mesh ) {
     }
 
     // Actual marking for refinement/derefinement
-    unsigned refineCutoff, derefineCutoff;
+    double refineCutoff, derefineCutoff;
     bool allVarsDeref;
     unsigned maxLevel = 4;
-    unsigned minLevel = 1;
+    unsigned minLevel = 0;
 
     for( unsigned lb = 0; lb<lnblocks; ++lb) {
       allVarsDeref = true;
       for(unsigned v=0; v<NVARS; ++v) { 
 
         // These are application parameters, could be different per var
-        refineCutoff = 1.0;
-        derefineCutoff = 1.0; 
+        refineCutoff = 0.99;
+        derefineCutoff = 0.0; 
 
         // If block's error is too large for any single refinement variable,
         // then the block should be refined. The block's error is too small
@@ -133,21 +138,33 @@ void btUnit::btRefineInitialize( std::shared_ptr<BittreeAmr> mesh ) {
     mesh->refine_init();
 
     for( unsigned lb = 0; lb<lnblocks; ++lb) {
-      if (refine[lb])
+      if (refine[lb]) {
         mesh->refine_mark(bitid[lb], true);
+      }
     }
+    //TODO mesh->refine_reduce(meshComm);
 
-    // check_refine
+    btCheckRefine(mesh);
 
     // mark for derefinement
+    for( unsigned lb = 0; lb<lnblocks; ++lb) {
+      if (derefine[lb]) {
+        unsigned parCoord[NDIM];
+        for(unsigned d=0; d<NDIM; ++d) parCoord[d] = lcoord[lb][d]/2;
+        
+        auto p = tree0->identify(lev[lb]-1,parCoord);
+        mesh->refine_mark(p.id, true);
+      }
+    }
+    //TODO mesh->refine_reduce(meshComm);
 
-    // check_derefine
+    btCheckDerefine(mesh);
 
 //---------------------------------------------------------------------
 //--Generate updated Bittree
     mesh->refine_update();
 
-    // sort (distribute over procs)
+    //TODO sort (distribute over procs)
 
 }
 
@@ -155,4 +172,196 @@ void btUnit::btRefineInitialize( std::shared_ptr<BittreeAmr> mesh ) {
 void btUnit::btRefineFinalize( std::shared_ptr<BittreeAmr> mesh ) {
     mesh->refine_apply();
     // verify tree?
+}
+
+void btUnit::btCheckRefine( std::shared_ptr<BittreeAmr> mesh ) {
+    // Tree before refinement. With only one rank, lnblocks = nblocks.
+    auto tree0 = mesh->getTree();
+    unsigned lnblocks = tree0->blocks();
+
+
+    bool repeat = true;
+
+//--Repeat is left true if another round is needed
+    while(repeat) {
+      std::vector<bool> ref_test( refine.size(), false );
+
+//----Check adjacent children of neighbors of local leaf blocks to see if they
+//----are marked for refinement.
+      for( unsigned lb = 0; lb<lnblocks; ++lb) {
+        if( !is_par[lb] && !refine[lb] ) {
+
+//--------Loop over neighbors
+          for(int lk= -K3D; lk<= K3D; ++lk) {
+          for(int lj= -K2D; lj<= K2D; ++lj) {
+          for(int li= -K1D; li<= K1D; ++li) {
+            std::vector<int> gCell{li,lj,lk};
+
+            auto neighCoord = calcNeighIntCoords(lev[lb], lcoord[lb].data(), gCell.data(), mesh);
+            // TODO continue if any(neighCoords<0)
+            unsigned neighCoord_u[NDIM];
+            for(unsigned d=0; d<NDIM; ++d) neighCoord_u[d] = static_cast<unsigned>(neighCoord[d]);
+            auto b = tree0->identify(lev[lb], neighCoord_u);
+            if (b.level == lev[lb]) { //neighbor exists
+              if(b.is_parent) {
+                // Check its children
+
+                // TODO loop over children
+                //  { auto c = tree->identify(lev[lb]+1, childCoord);
+                //    if(c.is_par) ref_test[lb] = true; }
+              }
+            }
+          }}} // neighbor loop
+        } // if leaf block not already marked
+      } // local block loop
+
+      repeat = false;
+
+      for(unsigned lb=0; lb<lnblocks; ++lb) {
+          if( ref_test[lb] && !refine[lb] ) {
+              repeat = true;
+              refine[lb] = true;
+              derefine[lb] = false;
+
+              mesh->refine_mark(bitid[lb],true);
+          }
+      }
+
+      // TODO Check all processors to see if a repeat is necessary
+      // TODO if(repeat) mesh->refine_reduce(meshComm);
+
+    } // while repeat
+}
+
+
+void btUnit::btCheckDerefine( std::shared_ptr<BittreeAmr> mesh ) {
+    // Tree before refinement. With only one rank, lnblocks = nblocks.
+    auto tree = mesh->getTree();
+    unsigned lnblocks = tree->blocks();
+
+
+    bool repeat = true;
+
+//--Repeat is left true if another round is needed
+    while(repeat) {
+      //Turn OFF deref_test if block can't be derefined
+      std::vector<bool> deref_test = derefine;
+
+//----Check neighbors - if any neighbor is either a parent 
+//----or marked for refinement, do not derefine. 
+      for( unsigned lb = 0; lb<lnblocks; ++lb) {
+        if( derefine[lb] ) {
+
+//--------Loop over neighbors
+          for(int lk= -K3D; lk<= K3D; ++lk) {
+          for(int lj= -K2D; lj<= K2D; ++lj) {
+          for(int li= -K1D; li<= K1D; ++li) {
+            std::vector<int> gCell{li,lj,lk};
+
+            auto neighCoord = calcNeighIntCoords(lev[lb], lcoord[lb].data(), gCell.data(), mesh);
+            // TODO continue if any(neighCoords<0)
+            unsigned neighCoord_u[NDIM];
+            for(unsigned d=0; d<NDIM; ++d) neighCoord_u[d] = static_cast<unsigned>(neighCoord[d]);
+            auto b = tree->identify(lev[lb], neighCoord_u);
+
+            if (b.level == lev[lb]) { //neighbor exists
+              bool neighRefine = mesh->check_refine_bit(b.id);
+              if(neighRefine) {
+                deref_test[lb] = false;
+                // TODO break neighbor loop
+              }
+            }
+
+            /* TODO
+            if( b.is_parent) {
+              if( any(lcoord[lb]/2 != neighCoord/2) ) {
+                bool deref_mark = mesh->check_refine_bit(b.id);
+                if(!deref_mark) {
+                  deref_test[lb] = false;
+                  // break
+                }
+              } else {
+                  deref_test[lb] = false;
+                  // break
+              }
+            } // neighbor is parent */
+          }}} // neighbor loop
+        } // if leaf block not already marked
+      } // local block loop
+
+      repeat = false;
+
+      for(unsigned lb=0; lb<lnblocks; ++lb) {
+          if( !deref_test[lb] && derefine[lb] ) {
+              repeat = true;
+              derefine[lb] = false;
+
+              // Unmark for derefinement
+          }
+      }
+
+      //mesh->refine_reduce_and(meshComm);
+
+//----If any blocks are still marked for derefinement, check to make
+//----sure their parents are still marked on bittree. This ensures blocks
+//----only derefine if ALL siblings are marked for derefine.
+      /*
+      for(unsigned lb=0; lb<lnblocks; ++lb) {
+        if( derefine[lb] ) {
+          auto p = tree->(lev[lb]-1,lcoord/2);
+          bool deref_mark = mesh->check_refine_bit(p.id);
+          if(!deref_mark) {
+            repeat = true;
+            derefine[lb] = false;
+          }
+        }
+      }*/
+
+
+      // TODO Check all processors to see if a repeat is necessary
+
+    } // while repeat
+}
+
+std::vector<int> btUnit::calcNeighIntCoords(unsigned lev, unsigned* lcoord, int* gCell, std::shared_ptr<BittreeAmr> mesh) {
+    auto tree = mesh->getTree();
+
+    std::vector<int> neighCoord(NDIM);
+
+//--Calculate integer coordinates of neighbor in direction
+    for(unsigned d=0;d<NDIM;++d)
+      neighCoord[d] = static_cast<int>(lcoord[d]) + gCell[d];
+
+//--Make sure not out-of-bounds. If periodic BCs, apply modulo
+    std::vector<int> maxcoord(NDIM);
+    for(unsigned d=0;d<NDIM;++d)
+      maxcoord[d] = static_cast<int>(tree->top_size(d)) << lev;
+
+    constexpr unsigned PERIODIC = 0;
+    constexpr unsigned REFLECTING = 1;
+    std::vector<unsigned> bcLo(NDIM, PERIODIC);
+    std::vector<unsigned> bcHi(NDIM, PERIODIC);
+
+    for(unsigned d=0;d<NDIM;++d) {
+      if (neighCoord[d] < 0 ) {
+        if ( bcLo[d] == PERIODIC )
+          neighCoord[d] = neighCoord[d] % maxcoord[d];
+        else if ( bcLo[d] == REFLECTING )
+          neighCoord[d] = static_cast<int>(lcoord[d]) - gCell[d];
+        else
+          neighCoord[d] = -1;
+      }
+
+      if (neighCoord[d] >= maxcoord[d]) {
+        if ( bcHi[d] == PERIODIC )
+          neighCoord[d] = neighCoord[d] % maxcoord[d];
+        else if ( bcHi[d] == REFLECTING )
+          neighCoord[d] = static_cast<int>(lcoord[d]) - gCell[d];
+        else
+          neighCoord[d] = -1;
+      }
+
+    }
+
+    return neighCoord;
 }

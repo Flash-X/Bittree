@@ -21,4 +21,7 @@ int main() {
     std::cout << mesh->slice_to_string(0);
     btUnit::btRefineFinalize( mesh );
 
+    btUnit::btRefineInitialize( mesh );
+    std::cout << mesh->slice_to_string(0);
+    btUnit::btRefineFinalize( mesh );
 }
