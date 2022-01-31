@@ -9,12 +9,13 @@ using namespace bittree;
 class btUnit {
   // Functions
   public:
+    static void btErrorEst( std::shared_ptr<BittreeAmr> mesh );
     static void btRefineInitialize( std::shared_ptr<BittreeAmr> mesh );
     static void btRefineFinalize( std::shared_ptr<BittreeAmr> mesh );
-    static void btCheckRefine( std::shared_ptr<BittreeAmr> mesh );
-    static void btCheckDerefine( std::shared_ptr<BittreeAmr> mesh );
 
   private:
+    static void btCheckRefine( std::shared_ptr<BittreeAmr> mesh );
+    static void btCheckDerefine( std::shared_ptr<BittreeAmr> mesh );
     static std::vector<int> calcNeighIntCoords(unsigned lev, unsigned* lcoord, int* gCell, std::shared_ptr<BittreeAmr> mesh);
 
   // cache of mesh data

@@ -12,8 +12,28 @@ std::vector<bool> btUnit::is_par;
 std::vector<std::vector<double>> btUnit::error;
 std::vector<std::vector<double>> btUnit::error_par;
 
+//NOTE: Create bittree in AmrMesh::MakeNewGrids (Real time)
+//   with
+//      `mesh = std::make_shared<BittreeAmr>(top,includes);`
 
-void btUnit::btRefineInitialize( std::shared_ptr<BittreeAmr> mesh ) {
+/* Structure of AmrMesh::MakeNewGrids (int lbase, Real time, int& new_finest, Vector<BoxArray>& new_grids)
+The BT version of MakeNewGrids should have three steps:
+    - Error Estimation and tagging - this is TBD, can use either the
+      below routine or a more AMReX-style tagging
+
+    - Bitree mesh generated - btRefineInitalize
+
+    - AMReX updates grids based on bitree - adapt gr_btMakeNewGridsCallback.F90
+*/
+
+/** Error estimation and tagging for refinement/derefinement.
+  * This is application specific, needs a callback to some error
+  * estimation routine.
+  *
+  * Requirements: two lists are created: `refine` and `derefine`, with
+  * flags for all local blocks marking them for refinement/derefinement.
+  */
+void btUnit::btErrorEst( std::shared_ptr<BittreeAmr> mesh ) {
     // Tree before refinement. With only one rank, lnblocks = nblocks.
     auto tree0 = mesh->getTree();
     unsigned lnblocks = tree0->blocks();
@@ -132,8 +152,17 @@ void btUnit::btRefineInitialize( std::shared_ptr<BittreeAmr> mesh ) {
         }
       }
     }
+}
 
-//---------------------------------------------------------------------
+/** New Bittree mesh is generated.
+  *
+  * This routine should be more-or-less copy pasted into AMReX.
+  */
+void btUnit::btRefineInitialize( std::shared_ptr<BittreeAmr> mesh ) {
+    // Tree before refinement. With only one rank, lnblocks = nblocks.
+    auto tree0 = mesh->getTree();
+    unsigned lnblocks = tree0->blocks();
+
 //--Initialize bittree refinement and mark leaves to be refined
     mesh->refine_init();
 
@@ -160,7 +189,6 @@ void btUnit::btRefineInitialize( std::shared_ptr<BittreeAmr> mesh ) {
 
     btCheckDerefine(mesh);
 
-//---------------------------------------------------------------------
 //--Generate updated Bittree
     mesh->refine_update();
 
@@ -168,12 +196,21 @@ void btUnit::btRefineInitialize( std::shared_ptr<BittreeAmr> mesh ) {
 
 }
 
-
+/** Old Bittree mesh is deleted. This should be called at the end of AmrCore::regrid.
+  */
 void btUnit::btRefineFinalize( std::shared_ptr<BittreeAmr> mesh ) {
     mesh->refine_apply();
     // verify tree?
 }
 
+//---------------------------------------------------------------------
+// Local Routines
+//---------------------------------------------------------------------
+
+/** Implements the logic which ensures the generated Bittree adheres
+  * to a strict octree structure with no more than one level difference
+  * between surrounding leaf blocks.
+  */
 void btUnit::btCheckRefine( std::shared_ptr<BittreeAmr> mesh ) {
     // Tree before refinement. With only one rank, lnblocks = nblocks.
     auto tree0 = mesh->getTree();
@@ -234,6 +271,10 @@ void btUnit::btCheckRefine( std::shared_ptr<BittreeAmr> mesh ) {
 }
 
 
+/** Implements the logic which ensures the generated Bittree adheres
+  * to a strict octree structure with no more than one level difference
+  * between surrounding leaf blocks.
+  */
 void btUnit::btCheckDerefine( std::shared_ptr<BittreeAmr> mesh ) {
     // Tree before refinement. With only one rank, lnblocks = nblocks.
     auto tree = mesh->getTree();
@@ -323,6 +364,8 @@ void btUnit::btCheckDerefine( std::shared_ptr<BittreeAmr> mesh ) {
     } // while repeat
 }
 
+/** Calculate integer coordinates of neighbors, taking into acount BCs.
+  */
 std::vector<int> btUnit::calcNeighIntCoords(unsigned lev, unsigned* lcoord, int* gCell, std::shared_ptr<BittreeAmr> mesh) {
     auto tree = mesh->getTree();
 

@@ -17,10 +17,12 @@ int main() {
     bool includes[1] = {true};
     mesh = std::make_shared<BittreeAmr>(top,includes);
 
+    btUnit::btErrorEst( mesh );
     btUnit::btRefineInitialize( mesh );
     std::cout << mesh->slice_to_string(0);
     btUnit::btRefineFinalize( mesh );
 
+    btUnit::btErrorEst( mesh );
     btUnit::btRefineInitialize( mesh );
     std::cout << mesh->slice_to_string(0);
     btUnit::btRefineFinalize( mesh );
