@@ -9,7 +9,7 @@ namespace bittree {
   
 class BittreeAmr  {
   public:
-    BittreeAmr(const unsigned top[], const bool includes[]);
+    BittreeAmr(const int top[], const int includes[]);
 
     std::shared_ptr<MortonTree> getTree(bool updated=false);
 

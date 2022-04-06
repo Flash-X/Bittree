@@ -12,9 +12,9 @@ namespace {
 }
 
 int main() {
-    unsigned top[NDIM];
+    int top[NDIM];
     for(unsigned d=0; d<NDIM; ++d) top[d] = 1;
-    bool includes[1] = {true};
+    int includes[1] = {1};
     mesh = std::make_shared<BittreeAmr>(top,includes);
 
     btUnit::btErrorEst( mesh );

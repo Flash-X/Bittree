@@ -10,13 +10,10 @@ extern "C" bool bittree_initialized() {
 /** Essentially a wrapper for TheTree's constructor */
 extern "C" void bittree_init(
     int topsize[],  // in
-    bool includes[] // in: includes[topsize[ndim-1]]...[topsize[0]]
+    int includes[] // in: includes[topsize[ndim-1]]...[topsize[0]]
   ) {
-  unsigned top[3];
-  for(int d=0; d < NDIM; d++)
-    top[d] = static_cast<unsigned>(topsize[d]);
  
-  the_tree = std::make_shared<BittreeAmr>(top,includes);
+  the_tree = std::make_shared<BittreeAmr>(topsize,includes);
 }
 
 /** Wrapper function for block_count */

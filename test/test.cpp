@@ -60,8 +60,8 @@ protected:
     BittreeUnitTest(void) {
       int nbase = CONCAT_NDIM(2,*3,*4);
       int top[NDIM] = {LIST_NDIM(2,3,4)};
-      bool includes[nbase];
-      for(int i=0; i<nbase; i++) includes[i] = true;
+      int includes[nbase];
+      for(int i=0; i<nbase; i++) includes[i] = 1;
       bittree_init(top, includes);
     }
 
@@ -388,7 +388,7 @@ TEST_F(BittreeUnitTest,BittreeCore){
 
 TEST_F(BittreeUnitTest,CppInterface){
     unsigned top[NDIM] = {LIST_NDIM(1,1,1)};
-    bool includes[1] = {true};
+    unsigned includes[1] = {1};
     BittreeAmr bt = BittreeAmr(top,includes);
 
     unsigned iterations=7;

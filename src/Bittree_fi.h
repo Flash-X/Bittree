@@ -15,7 +15,7 @@ extern "C" bool bittree_initialized();
 /** Essentially a wrapper for TheTree's constructor */
 extern "C" void bittree_init(
     int topsize[],  // in
-    bool includes[] // in: includes[topsize[ndim-1]]...[topsize[0]]
+    int includes[] // in: includes[topsize[ndim-1]]...[topsize[0]]
   );
 
 /** Wrapper function for block_count */

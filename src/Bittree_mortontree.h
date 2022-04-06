@@ -29,7 +29,7 @@ namespace bittree {
 
   public:
     MortonTree() {}
-    MortonTree(const unsigned blks[NDIM], const bool includes[]=0x0);
+    MortonTree(const int blks[NDIM], const int includes[]);
     ~MortonTree() = default;
 
     // Getters

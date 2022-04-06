@@ -4,6 +4,7 @@
 
 #include <iomanip>
 #include <sstream>
+#include <iostream>
 
 namespace bittree {
   unsigned rect_coord_to_mort(const unsigned domain[NDIM], const unsigned coord[NDIM]) {
@@ -73,14 +74,18 @@ namespace bittree {
     }
   }
   
-  MortonTree::MortonTree(const unsigned size[NDIM], const bool includes[]) {
+  MortonTree::MortonTree(const int size_in[NDIM], const int includes[]) {
+
     
     unsigned blkpop = 1;
+    unsigned size[NDIM];
     for(unsigned d=0; d < NDIM; d++) {
+      size[d] = size_in[d];
       lev0_blks_[d] = size[d];
       blkpop *= size[d];
     }
     levs_ = 1;
+
     // the first blkpop bits of our bitarray are 'inclusion' bits
     // after that come the actual block bits for all but the last level, which has no bits
     id0_ = blkpop;
@@ -91,9 +96,10 @@ namespace bittree {
       unsigned x[NDIM];
       rect_mort_to_coord(size, mort, x);
       unsigned ix = 0;
-      for(unsigned d=NDIM; d--;)
+      for(unsigned d=NDIM; d--;) {
         ix = size[d]*ix + x[d];
-      unsigned include = includes[ix] ? 1 : 0;
+      }
+      unsigned include = (includes[ix]==0) ? 0 : 1;
       lev0_id1 += include;
       bldr.write<1>(include);
     }

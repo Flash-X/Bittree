@@ -5,7 +5,7 @@
 namespace bittree {
 
 /** Constructor for BittreeAmr */
-BittreeAmr::BittreeAmr(const unsigned top[], const bool includes[]):
+BittreeAmr::BittreeAmr(const int top[], const int includes[]):
   tree_(std::make_shared<MortonTree>(top, includes)),
   is_reduced_(false),
   is_updated_(false),
@@ -114,7 +114,7 @@ void BittreeAmr::refine_apply() {
   in_refine_ = false;
 }
 
-/** Wrapper function to MortonTree's print_slice, which print a nice
+/** Wrapper function to MortonTree::print_slice, which print a nice
   * representation of the Bittree and refine_delta_.
   * If tree has been updated, print both original and updated version.
   * Can be passed a datatype to change what number prints at each block loc.
