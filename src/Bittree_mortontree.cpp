@@ -80,7 +80,7 @@ namespace bittree {
     unsigned blkpop = 1;
     unsigned size[NDIM];
     for(unsigned d=0; d < NDIM; d++) {
-      size[d] = size_in[d];
+      size[d] = static_cast<unsigned>(size_in[d]);
       lev0_blks_[d] = size[d];
       blkpop *= size[d];
     }
