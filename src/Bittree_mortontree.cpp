@@ -447,7 +447,7 @@ namespace bittree {
       std::vector<unsigned> coord(NDIM);
       coord[2] = k; //slice
       for(  unsigned j=0; j < ylim; ++j) {
-        if(NDIM>=2) coord[1] = j;
+        if(NDIM>=2) coord[1] = ylim - j - 1;
         for(unsigned i=0; i < xlim; ++i) {
           if(NDIM>=1) coord[0] = i;
 
