@@ -9,7 +9,7 @@ using namespace bittree;
 class btUnit {
   // Functions
   public:
-    static void btErrorEst( std::shared_ptr<BittreeAmr> mesh );
+    static void btErrorEst( std::shared_ptr<BittreeAmr> mesh ,int up);
     static void btRefineInitialize( std::shared_ptr<BittreeAmr> mesh );
     static void btRefineFinalize( std::shared_ptr<BittreeAmr> mesh );
 

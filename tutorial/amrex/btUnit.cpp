@@ -33,7 +33,7 @@ The BT version of MakeNewGrids should have three steps:
   * Requirements: two lists are created: `refine` and `derefine`, with
   * flags for all local blocks marking them for refinement/derefinement.
   */
-void btUnit::btErrorEst( std::shared_ptr<BittreeAmr> mesh ) {
+void btUnit::btErrorEst( std::shared_ptr<BittreeAmr> mesh, int up) {
     // Tree before refinement. With only one rank, lnblocks = nblocks.
     auto tree0 = mesh->getTree();
     unsigned lnblocks = tree0->blocks();
@@ -79,9 +79,13 @@ void btUnit::btErrorEst( std::shared_ptr<BittreeAmr> mesh ) {
         double error_calc_result;
         for(unsigned v=0; v<NVARS; ++v) {
             // TODO replace with actual calculation
-            error_calc_result = 0; 
-            for(unsigned d=0; d<NDIM; ++d)
-              if(lcoord[blkID][d]==0) error_calc_result += 1.0/NDIM;
+            if(up) {
+                error_calc_result = 1.0; 
+            } else {
+                error_calc_result = 0.0;
+            }
+            //for(unsigned d=0; d<NDIM; ++d)
+            //  if(lcoord[blkID][d]==0) error_calc_result += 1.0/NDIM;
 
             error[blkID][v] = error_calc_result;
         }
@@ -122,8 +126,8 @@ void btUnit::btErrorEst( std::shared_ptr<BittreeAmr> mesh ) {
       for(unsigned v=0; v<NVARS; ++v) { 
 
         // These are application parameters, could be different per var
-        refineCutoff = 0.99;
-        derefineCutoff = 0.0; 
+        refineCutoff = 0.5;
+        derefineCutoff = 0.5; 
 
         // If block's error is too large for any single refinement variable,
         // then the block should be refined. The block's error is too small
