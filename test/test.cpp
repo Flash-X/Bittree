@@ -421,6 +421,7 @@ TEST_F(BittreeUnitTest,CppInterface){
       bt.refine_apply();
     }
 
+
     // Derefine finest layer
     {
       unsigned lev = maxLev;
@@ -463,6 +464,18 @@ TEST_F(BittreeUnitTest,CppInterface){
     auto id1 = tree->level_id0(maxLev-1);
     ASSERT_EQ( bits->count(id0,id1), numpars);
 
+    // Go back and refine something on a coarse level
+    tree = bt.getTree();
+    bt.refine_init();
+    xlim = ((1u<<2) - 1)*K1D;
+    ylim = ((1u<<2) - 1)*K2D;
+    zlim = ((1u<<2) - 1)*K3D;
+    ijk[0]=xlim; ijk[1]=ylim; ijk[2]=zlim;
+    MortonTree::Block b = tree->identify(2,ijk);
+    if(b.level==2) bt.refine_mark(b.id,true);
+    bt.refine_reduce(comm);
+    bt.refine_update();
+    bt.refine_apply();
 
 }
 
@@ -533,6 +546,11 @@ TEST_F(BittreeUnitTest,DomainWithHoles){
     tree = bt.getTree();
 
     std::cout << bt.slice_to_string(0);
+    // Check top size
+    ASSERT_EQ( tree->top_size(0), 2u*K1D);
+    ASSERT_EQ( tree->top_size(1), 2u*K2D);
+    ASSERT_EQ( tree->top_size(2), 2u*K3D);
+    ASSERT_EQ( tree->top_size(7), 0u);
 
     //// Quick check of level_blocks
     ASSERT_EQ( tree->level_blocks(1), SELECT_NDIM(2u,12u,56u) );

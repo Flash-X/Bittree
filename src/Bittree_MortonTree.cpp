@@ -123,7 +123,7 @@ namespace bittree {
 
   unsigned MortonTree::top_size(unsigned dim) const {
     if(dim<BTDIM) return lev0_blks_[dim];
-    else return 0;
+    return 0;
   }
   
   unsigned MortonTree::id_upper_bound() const {
@@ -345,8 +345,9 @@ namespace bittree {
           b_w.write<(1<<BTDIM)>(b_kids);
       }
       else { // it was a leaf
-        if(del_rp.read<1>()) // and it became a parent!
-          b_w.write<(1<<BTDIM)>(0);
+        if(del_rp.read<1>()) {
+          b_w.write<(1<<BTDIM)>(0); // and it became a parent!
+        }
       }
       if(a_rp.index() == level_[lev-1].id1 || b_w.index() == b_bitlen) {
         b_tree->level_[lev].id1 = b_w.index();
