@@ -427,7 +427,7 @@ namespace bittree {
           lev--;
         }
         //if last block on top level
-        else if (lev==0 && (pos[lev]+1)==level_[0].id1 ){
+        else if (lev==0 && (pos[lev]+1+level_id0(0))==level_[0].id1 ){
           return;
         }
         //else

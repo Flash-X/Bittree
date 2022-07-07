@@ -490,11 +490,11 @@ TEST_F(BittreeUnitTest,DomainWithHoles){
 #elif BTDIM==2
     int includes[4] = {1,1,1,0};
 #else
-    int includes[8] = {1,1,1,0,1,1,1,1}
+    int includes[8] = {1,1,1,0,1,1,1,1};
 #endif
     BittreeAmr bt = BittreeAmr(top,includes);
 
-    unsigned maxLev=3;
+    unsigned maxLev=2;
     unsigned xlim,ylim,zlim,numpars=0;
     unsigned ijk[3];
     std::shared_ptr<MortonTree> tree;
@@ -503,6 +503,7 @@ TEST_F(BittreeUnitTest,DomainWithHoles){
       tree = bt.getTree();
       xlim = ((2u<<lev) - 1)*K1D + 1;
       ylim = ((2u<<lev) - 1)*K2D + 1;
+      if(BTDIM>1) ylim = ylim/2;
       zlim = ((2u<<lev) - 1)*K3D + 1;
       for(    unsigned k=0; k<zlim; ++k) {
         for(  unsigned j=0; j<ylim; ++j) {
@@ -546,6 +547,23 @@ TEST_F(BittreeUnitTest,DomainWithHoles){
     tree = bt.getTree();
 
     std::cout << bt.slice_to_string(0);
+
+    // Check bitid_list
+    unsigned mmin = 0;
+    unsigned mmax = SELECT_NDIM(3,11,39);
+    int bitid_list[mmax-mmin];
+#if BTDIM==1
+    int true_list[3] = {2,3,4};
+#elif BTDIM==2
+    int true_list[11] = {4,7,8,9,10,5,11,12,13,14,6};
+#else
+    int true_list[39] = {8,15,16,17,18,19,20,21,22,9,23,24,25,26,27,28,29,30,10,11,31,32,33,34,35,36,37,38,12,39,40,41,42,43,44,45,46,13,14};
+#endif
+    tree->bitid_list(mmin, mmax, bitid_list);
+    for( unsigned i=mmin; i<mmax; ++i) {
+        ASSERT_EQ( bitid_list[i-mmin], true_list[i] );
+    }
+
     // Check top size
     ASSERT_EQ( tree->top_size(0), 2u*K1D);
     ASSERT_EQ( tree->top_size(1), 2u*K2D);
@@ -553,7 +571,7 @@ TEST_F(BittreeUnitTest,DomainWithHoles){
     ASSERT_EQ( tree->top_size(7), 0u);
 
     //// Quick check of level_blocks
-    ASSERT_EQ( tree->level_blocks(1), SELECT_NDIM(2u,12u,56u) );
+    ASSERT_EQ( tree->level_blocks(1), SELECT_NDIM(2u,8u,32u) );
 
     auto bits = tree->bits_;
     std::cout << "End of test block count=" << tree->blocks() << std::endl;
