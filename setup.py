@@ -87,7 +87,7 @@ def main():
         else:
             f.write("CODECOVERAGE = false\n")
 
-        f.write("NDIM = {}\n".format(args.dim))
+        f.write("BTDIM = {}\n".format(args.dim))
 
         f.write("\n")
         if args.test == 'library':
@@ -107,11 +107,10 @@ def main():
     with open(constantsFile,'w') as f:
         f.write("#ifndef BITTREE_CONSTANTS_H__\n#define BITTREE_CONSTANTS_H__\n\n")
 
-        f.write("#define NDIM        {}\n".format(args.dim))
+        f.write("#define BTDIM       {}\n".format(args.dim))
         f.write("#define K1D         {}\n".format(int(args.dim>=1)))
         f.write("#define K2D         {}\n".format(int(args.dim>=2)))
         f.write("#define K3D         {}\n".format(int(args.dim>=3)))
-        f.write("#define MDIM        3\n")
 
         f.write("#endif\n")
 

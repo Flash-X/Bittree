@@ -4,7 +4,7 @@
 #ifndef BITTREE_BITS_H__
 #define BITTREE_BITS_H__
 
-#include "Bittree_prelude.h"
+#include "Bittree_Prelude.h"
 
 #if defined(__IBMCPP__)
 # include "builtins.h"

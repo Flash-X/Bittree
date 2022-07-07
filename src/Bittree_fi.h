@@ -1,7 +1,7 @@
 #ifndef BITTREE_FI_H__
 #define BITTREE_FI_H__
 
-#include "Bittree_Amr.h"
+#include "Bittree_BittreeAmr.h"
 
 using namespace bittree;
 

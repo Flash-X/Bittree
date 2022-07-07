@@ -1,15 +1,15 @@
-#include "Bittree_mortontree.h"
+#include "Bittree_MortonTree.h"
 
-#include "Bittree_bits.h"
+#include "Bittree_Bits.h"
 
 #include <iomanip>
 #include <sstream>
 #include <iostream>
 
 namespace bittree {
-  unsigned rect_coord_to_mort(const unsigned domain[NDIM], const unsigned coord[NDIM]) {
-    unsigned x[NDIM], box[NDIM];
-    for(unsigned d=0; d < NDIM; d++) {
+  unsigned rect_coord_to_mort(const unsigned domain[BTDIM], const unsigned coord[BTDIM]) {
+    unsigned x[BTDIM], box[BTDIM];
+    for(unsigned d=0; d < BTDIM; d++) {
       x[d] = coord[d];
       box[d] = domain[d];
     }
@@ -19,7 +19,7 @@ namespace bittree {
       // find dim that can fit biggest pow2 strictly inside box
       unsigned max_pow2 = 0u;
       unsigned max_d;
-      for(unsigned d=0; d < NDIM; d++) {
+      for(unsigned d=0; d < BTDIM; d++) {
         unsigned p2 = glb_pow2(box[d]-1u);
         if(p2 >= max_pow2) {
           max_pow2 = p2;
@@ -32,7 +32,7 @@ namespace bittree {
         box[max_d] = max_pow2;
       else {
         unsigned pop = 1u;
-        for(unsigned d=0; d < NDIM; d++)
+        for(unsigned d=0; d < BTDIM; d++)
           pop *= d == max_d ? max_pow2 : box[d];
         mort += pop;
         x[max_d] -= max_pow2;
@@ -41,9 +41,9 @@ namespace bittree {
     }
   }
   
-  void rect_mort_to_coord(const unsigned domain[NDIM], unsigned mort, unsigned coord[NDIM]) {
-    unsigned box[NDIM];
-    for(unsigned d=0; d < NDIM; d++) {
+  void rect_mort_to_coord(const unsigned domain[BTDIM], unsigned mort, unsigned coord[BTDIM]) {
+    unsigned box[BTDIM];
+    for(unsigned d=0; d < BTDIM; d++) {
       coord[d] = 0u;
       box[d] = domain[d];
     }
@@ -52,7 +52,7 @@ namespace bittree {
       // find dim that can fit biggest pow2 strictly inside box
       unsigned max_pow2 = 0u;
       unsigned max_d;
-      for(unsigned d=0; d < NDIM; d++) {
+      for(unsigned d=0; d < BTDIM; d++) {
         unsigned p2 = glb_pow2(box[d]-1u);
         if(p2 >= max_pow2) {
           max_pow2 = p2;
@@ -62,7 +62,7 @@ namespace bittree {
       if(max_pow2 == 0u)
         return; // the box is just one, we're done
       unsigned pop = 1u; // left sub-box population
-      for(unsigned d=0; d < NDIM; d++)
+      for(unsigned d=0; d < BTDIM; d++)
         pop *= d == max_d ? max_pow2 : box[d];
       if(mort < pop)
         box[max_d] = max_pow2;
@@ -74,12 +74,12 @@ namespace bittree {
     }
   }
   
-  MortonTree::MortonTree(const int size_in[NDIM], const int includes[]) {
+  MortonTree::MortonTree(const int size_in[BTDIM], const int includes[]) {
 
     
     unsigned blkpop = 1;
-    unsigned size[NDIM];
-    for(unsigned d=0; d < NDIM; d++) {
+    unsigned size[BTDIM];
+    for(unsigned d=0; d < BTDIM; d++) {
       size[d] = static_cast<unsigned>(size_in[d]);
       lev0_blks_[d] = size[d];
       blkpop *= size[d];
@@ -93,10 +93,10 @@ namespace bittree {
     FastBitArray::Builder bldr(blkpop);
     // generate inclusion bits
     for(unsigned mort=0; mort < blkpop; mort++) {
-      unsigned x[NDIM];
+      unsigned x[BTDIM];
       rect_mort_to_coord(size, mort, x);
       unsigned ix = 0;
-      for(unsigned d=NDIM; d--;) {
+      for(unsigned d=BTDIM; d--;) {
         ix = size[d]*ix + x[d];
       }
       unsigned include = (includes[ix]==0) ? 0 : 1;
@@ -122,7 +122,7 @@ namespace bittree {
   }
 
   unsigned MortonTree::top_size(unsigned dim) const {
-    if(dim<NDIM) return lev0_blks_[dim];
+    if(dim<BTDIM) return lev0_blks_[dim];
     else return 0;
   }
   
@@ -150,7 +150,7 @@ namespace bittree {
     unsigned lev = block_level(id);
     if(lev>0) {
       unsigned levIdx = id - level_id0(lev);
-      unsigned parIdx = levIdx / (1u<<NDIM);
+      unsigned parIdx = levIdx / (1u<<BTDIM);
       for(unsigned pid=level_id0(lev-1); pid<level_id1(lev-1); ++pid) {
         if(block_is_parent(pid)) {
           if(parIdx == bits_->count(level_id0(lev-1), pid)) return pid;
@@ -172,9 +172,9 @@ namespace bittree {
     return lev;
   }
 
-  bool MortonTree::inside(unsigned lev, const unsigned x[NDIM]) const {
-    unsigned x0[NDIM];
-    for(unsigned d=0; d < NDIM; d++) {
+  bool MortonTree::inside(unsigned lev, const unsigned x[BTDIM]) const {
+    unsigned x0[BTDIM];
+    for(unsigned d=0; d < BTDIM; d++) {
       x0[d] = x[d] >> lev;
       if(x0[d] >= lev0_blks_[d])
         return false;
@@ -186,13 +186,13 @@ namespace bittree {
    *  on the current tree.*
    *  \todo error check block is inside domain */
   MortonTree::Block
-  MortonTree::identify(unsigned lev, const unsigned x[NDIM]) const {
+  MortonTree::identify(unsigned lev, const unsigned x[BTDIM]) const {
     const std::shared_ptr<BitArray> bits_a = bits_; // use this for bit access
     Block ans;
     unsigned ix; // index of current block in current level
     { // top level=0
-      unsigned x0[NDIM];
-      for(unsigned d=0; d < NDIM; d++) {
+      unsigned x0[BTDIM];
+      for(unsigned d=0; d < BTDIM; d++) {
         x0[d] = unsigned(x[d] >> lev); // coarsen x to top level
         ans.coord[d] = unsigned(x0[d]);
       }
@@ -211,14 +211,14 @@ namespace bittree {
 #ifndef ALT_MORTON_ORDER
         ans.mort += 1;
 #endif
-        for(unsigned d=0; d < NDIM; d++) {
+        for(unsigned d=0; d < BTDIM; d++) {
           unsigned xd = x[d] >> (lev-a_lev-1u);
           ans.coord[d] <<= 1;
           if(xd >= ans.coord[d]+1u) {
             ans.coord[d] += 1u;
             inside += 1u << d;
 #ifdef ALT_MORTON_ORDER
-            ans.mort += d == NDIM-1 ? 1 : 0;
+            ans.mort += d == BTDIM-1 ? 1 : 0;
 #endif
           }
         }
@@ -229,11 +229,11 @@ namespace bittree {
         ans.level = a_lev;
         ans.is_parent = is_par;
 #ifdef ALT_MORTON_ORDER
-        if(is_par) inside = 1u<<(NDIM-1); //include first half of children
+        if(is_par) inside = 1u<<(BTDIM-1); //include first half of children
 #endif
       }
       unsigned parbef = parents_before(a_lev, ix);
-      ix = (parbef<<NDIM) + inside;
+      ix = (parbef<<BTDIM) + inside;
     }
     return ans;
   }
@@ -248,39 +248,39 @@ namespace bittree {
     while(level_[lev].id1 <= id)
       lev += 1;
     ans.level = lev;
-    for(unsigned d=0; d < NDIM; d++)
+    for(unsigned d=0; d < BTDIM; d++)
       ans.coord[d] = unsigned(0u);
     // index on this level
     unsigned ix = id - (lev == 0 ? id0_ : level_[lev-1].id1);
     { // count children of all preceeding parents in morton index
       unsigned down = ix;
       for(unsigned lev1=lev; lev1 < levs_; lev1++) {
-        down = parents_before(lev1, down) << NDIM;
+        down = parents_before(lev1, down) << BTDIM;
 #ifdef ALT_MORTON_ORDER
         if(lev1 == lev && ans.is_parent)
-          down += 1u<<(NDIM-1);
+          down += 1u<<(BTDIM-1);
 #endif
         ans.mort += down;
       }
     }
     // walk up the levels
     while(0 < lev) {
-      for(unsigned d=0; d < NDIM; d++)
+      for(unsigned d=0; d < BTDIM; d++)
         ans.coord[d] += unsigned(ix>>d & 1u) << (ans.level-lev);
 #ifdef ALT_MORTON_ORDER
-      ans.mort += ix + (ix>>(NDIM-1) & 1u);
+      ans.mort += ix + (ix>>(BTDIM-1) & 1u);
 #else
       ans.mort += ix + 1;
 #endif
-      ix = parent_find(lev-1, ix>>NDIM) - (lev-1==0 ? id0_ : level_[lev-2].id1);
+      ix = parent_find(lev-1, ix>>BTDIM) - (lev-1==0 ? id0_ : level_[lev-2].id1);
       lev -= 1;
     }
     ans.mort += ix;
     { // top level=0
-      unsigned x0[NDIM];
+      unsigned x0[BTDIM];
       ix = bits_->find(0, ix); // account for excluded blocks
       rect_mort_to_coord(lev0_blks_, ix, x0);
-      for(unsigned d=0; d < NDIM; d++)
+      for(unsigned d=0; d < BTDIM; d++)
         ans.coord[d] += unsigned(x0[d]) << ans.level;
     }
     return ans;
@@ -299,7 +299,7 @@ namespace bittree {
       unsigned lev_id1 = level_[lev].id1;
       unsigned b_pars = BitArray::count_xor(*bits_, *delta, lev_id0, lev_id1);
       if(b_pars != 0) b_bitlen = b_id1;
-      b_id1 += b_pars << NDIM;
+      b_id1 += b_pars << BTDIM;
       if(b_pars == 0) break;
       b_levs += 1;
     }
@@ -310,7 +310,7 @@ namespace bittree {
       b_tree->levs_ = b_levs;
       b_tree->id0_ = id0_;
       b_tree->level_.resize(b_levs);
-      for(unsigned d=0; d < NDIM; d++)
+      for(unsigned d=0; d < BTDIM; d++)
         b_tree->lev0_blks_[d] = lev0_blks_[d];
       // still must initialize b_tree->bits
     }
@@ -339,14 +339,14 @@ namespace bittree {
       if(a_rp.read<1>()) { // it was a parent
         bool still_a_parent = !del_rp.read<1>();
         // read kids, apply delta
-        BitArray::WType b_kids = a_r.read<(1<<NDIM)>() ^ del_r.read<(1<<NDIM)>();
+        BitArray::WType b_kids = a_r.read<(1<<BTDIM)>() ^ del_r.read<(1<<BTDIM)>();
         // if it became a leaf then we just dont write out the kids
         if(still_a_parent)
-          b_w.write<(1<<NDIM)>(b_kids);
+          b_w.write<(1<<BTDIM)>(b_kids);
       }
       else { // it was a leaf
         if(del_rp.read<1>()) // and it became a parent!
-          b_w.write<(1<<NDIM)>(0);
+          b_w.write<(1<<BTDIM)>(0);
       }
       if(a_rp.index() == level_[lev-1].id1 || b_w.index() == b_bitlen) {
         b_tree->level_[lev].id1 = b_w.index();
@@ -393,7 +393,7 @@ namespace bittree {
 
       //if scanning a parent and children have not been scanned, move down a level
       if(is_par && !childrenDone[lev]) {
-        ix = level_[lev].id1 + ((1u<<NDIM) * parents_before(lev,pos[lev]));
+        ix = level_[lev].id1 + ((1u<<BTDIM) * parents_before(lev,pos[lev]));
         childrenDone[lev+1]=false;
        
 #ifndef ALT_MORTON_ORDER
@@ -412,14 +412,14 @@ namespace bittree {
 
 #ifdef ALT_MORTON_ORDER
         //if middle child, store parent's bitid
-        if (lev>0 && (((pos[lev]+1) % (1u<<NDIM)) == (1u<<(NDIM-1))) ){
+        if (lev>0 && (((pos[lev]+1) % (1u<<BTDIM)) == (1u<<(BTDIM-1))) ){
           if(mort<mort_max && mort>=mort_min) out[mort-mort_min] = int(pos[lev-1] + level_id0(lev-1)) ;
           mort++;
         }
 #endif
 
         //if last child
-        if (lev>0 && (((pos[lev]+1) % (1u<<NDIM)) == 0) ) {
+        if (lev>0 && (((pos[lev]+1) % (1u<<BTDIM)) == 0) ) {
           pos[lev]++;
           childrenDone[lev-1] = true;
           ix = pos[lev-1] + level_id0(lev-1);
@@ -449,7 +449,7 @@ namespace bittree {
 
     std::ostringstream buffer;
     buffer << "Bittree, datatype=" << dtypes[datatype];
-    if(NDIM==3) buffer << " (slice k=" << k << ")";
+    if(BTDIM==3) buffer << " (slice k=" << k << ")";
     buffer << ":\n";
 
     unsigned levs = levels();
@@ -458,12 +458,12 @@ namespace bittree {
       
       unsigned xlim = top_size(0)<<lev;
       unsigned ylim = ((top_size(1)<<lev) - 1)*K2D + 1;
-      std::vector<unsigned> coord(NDIM);
+      std::vector<unsigned> coord(BTDIM);
       coord[2] = k; //slice
       for(  unsigned j=0; j < ylim; ++j) {
-        if(NDIM>=2) coord[1] = ylim - j - 1;
+        if(BTDIM>=2) coord[1] = ylim - j - 1;
         for(unsigned i=0; i < xlim; ++i) {
-          if(NDIM>=1) coord[0] = i;
+          if(BTDIM>=1) coord[0] = i;
 
           if(inside(lev, coord.data())) {
             MortonTree::Block b0 = identify(lev, coord.data());
@@ -472,7 +472,7 @@ namespace bittree {
             //DBG_ASSERT(b0.id == b1.id);
             //DBG_ASSERT(b0.level == b1.level);
             //DBG_ASSERT(b0.mort == b1.mort);
-            //for(unsigned n=0; n<NDIM; ++n) {
+            //for(unsigned n=0; n<BTDIM; ++n) {
             //  DBG_ASSERT(b0.coord[n] == b1.coord[n]);
             //}
 

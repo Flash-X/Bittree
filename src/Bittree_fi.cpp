@@ -91,8 +91,8 @@ extern "C" void bittree_identify(
     int *mort,          //out
     int *bitid          //out
   ) {
-  unsigned coord[NDIM];
-  for(unsigned d=0; d < NDIM; d++)
+  unsigned coord[BTDIM];
+  for(unsigned d=0; d < BTDIM; d++)
     coord[d] = static_cast<unsigned>( ijk[d]);
   unsigned lev_u = static_cast<unsigned>(*lev);
 
@@ -102,14 +102,14 @@ extern "C" void bittree_identify(
       MortonTree::Block b = tree->identify(lev_u, coord);
 
       *lev = static_cast<int>(b.level);
-      for(unsigned d=0; d < NDIM; d++)
+      for(unsigned d=0; d < BTDIM; d++)
         ijk[d] = static_cast<int>(b.coord[d]);
       *mort = static_cast<int>(b.mort);
       *bitid = static_cast<int>(b.id);
     }
     else {
       *lev = -1;
-      for(unsigned d=0; d < NDIM; d++)
+      for(unsigned d=0; d < BTDIM; d++)
         ijk[d] = -1;
       *mort = -1;
       *bitid = -1;
@@ -134,13 +134,13 @@ extern "C" void bittree_locate(
       MortonTree::Block b = tree->locate(bitid_u);
 
       *lev = static_cast<int>(b.level);
-      for(unsigned d=0; d < NDIM; d++)
+      for(unsigned d=0; d < BTDIM; d++)
         ijk[d] = static_cast<int>(b.coord[d]);
       *mort = static_cast<int>(b.mort);
     }
     else {
       *lev = -1;
-      for(unsigned d=0; d < NDIM; d++)
+      for(unsigned d=0; d < BTDIM; d++)
         ijk[d] = -1;
       *mort = -1;
     }

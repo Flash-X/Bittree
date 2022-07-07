@@ -1,8 +1,8 @@
 #ifndef BITTREE_AMR_H__
 #define BITTREE_AMR_H__
 
-#include "Bittree_bitarray.h"
-#include "Bittree_mortontree.h"
+#include "Bittree_BitArray.h"
+#include "Bittree_MortonTree.h"
 #include "mpi.h"
 
 namespace bittree {

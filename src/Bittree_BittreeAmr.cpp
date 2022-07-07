@@ -1,4 +1,4 @@
-#include "Bittree_Amr.h"
+#include "Bittree_BittreeAmr.h"
 #include <sstream>
 #include <iostream>
 

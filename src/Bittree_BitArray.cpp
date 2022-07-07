@@ -1,5 +1,5 @@
-#include "Bittree_bitarray.h"
-#include "Bittree_bits.h"
+#include "Bittree_BitArray.h"
+#include "Bittree_Bits.h"
 
 namespace bittree {
 

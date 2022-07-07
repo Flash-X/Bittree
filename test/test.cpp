@@ -6,10 +6,10 @@
 #include "Bittree_fi.h"
 
 namespace {
-#if NDIM==1
+#if BTDIM==1
     int mort_true[6] = {1,2,3,4,5,6};
     int bitid_true[6] = {2,3,4,5,6,7};
-#elif NDIM==2
+#elif BTDIM==2
     int mort_true[46] = {1, 2, 15, 28, 45, 46, 3, 4, 9, 10, 16, 17, 29, 30, 18, 23, 35, 40, 5, 6, 7, 8, 11, 12, 13, 14, 31, 32, 33, 34, 19, 20, 24, 25, 36, 37, 41, 42, 21, 22, 26, 27, 38, 39, 43, 44};
     int bitid_true[46] = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 40, 41, 42, 43, 32, 33, 36, 37, 44, 45, 48, 49, 34, 35, 38, 39, 46, 47, 50, 51};
 #else
@@ -59,7 +59,7 @@ class BittreeUnitTest : public testing::Test {
 protected:
     BittreeUnitTest(void) {
       int nbase = CONCAT_NDIM(2,*3,*4);
-      int top[NDIM] = {LIST_NDIM(2,3,4)};
+      int top[BTDIM] = {LIST_NDIM(2,3,4)};
       int includes[nbase];
       for(int i=0; i<nbase; i++) includes[i] = 1;
       bittree_init(top, includes);
@@ -303,14 +303,14 @@ TEST_F(BittreeUnitTest,BittreeCore){
     ASSERT_EQ(lev,0);
     ASSERT_EQ(mort,1);
     ASSERT_EQ(ijk[0], 1);
-    for(int n=1; n<NDIM; ++n) ASSERT_EQ(ijk[n], 0);
+    for(int n=1; n<BTDIM; ++n) ASSERT_EQ(ijk[n], 0);
 
     bitid = 2112;
     updated = false;
     bittree_locate(&updated,&bitid,&lev,ijk,&mort);
     ASSERT_EQ(lev,-1);
     ASSERT_EQ(mort,-1);
-    for(int n=0; n<NDIM; ++n) ASSERT_EQ(ijk[n], -1);
+    for(int n=0; n<BTDIM; ++n) ASSERT_EQ(ijk[n], -1);
 
     bitid = id_lims[0]+1;
     updated = true;
@@ -318,23 +318,23 @@ TEST_F(BittreeUnitTest,BittreeCore){
     ASSERT_EQ(lev,1);
     ASSERT_EQ(mort,2);
     ASSERT_EQ(ijk[0], 1);
-    for(int n=1; n<NDIM; ++n) ASSERT_EQ(ijk[n], 0);
+    for(int n=1; n<BTDIM; ++n) ASSERT_EQ(ijk[n], 0);
 
     bitid = 4532;
     updated = true;
     bittree_locate(&updated,&bitid,&lev,ijk,&mort);
     ASSERT_EQ(lev,-1);
     ASSERT_EQ(mort,-1);
-    for(int n=0; n<NDIM; ++n) ASSERT_EQ(ijk[n], -1);
+    for(int n=0; n<BTDIM; ++n) ASSERT_EQ(ijk[n], -1);
 
     // Test get_bitid_list
     updated = false;
     int mmin = 1;
     int mmax = SELECT_NDIM(2,4,19);
     int bitid_list[mmax-mmin];
-#if NDIM==1
+#if BTDIM==1
     int true_list[2] = {2,3};
-#elif NDIM==2
+#elif BTDIM==2
     int true_list[6] = {6,7,8,9,10,11};
 #else
     int true_list[24] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
@@ -348,9 +348,9 @@ TEST_F(BittreeUnitTest,BittreeCore){
     mmin = 1;
     mmax = SELECT_NDIM(3,7,28);
     int bitid_list_2[mmax-mmin];
-#if NDIM==1
+#if BTDIM==1
     int true_list_2[4] = {2,4,5,3};
-#elif NDIM==2
+#elif BTDIM==2
     int true_list_2[10] = {6,12,13,14,15,7,8,9,10,11};
 #else
     int true_list_2[32] = {24,48,49,50,51,52,53,54,55,25,26,27,28,29,30,31,32,33,34,35,36,
@@ -387,7 +387,7 @@ TEST_F(BittreeUnitTest,BittreeCore){
 
 
 TEST_F(BittreeUnitTest,CppInterface){
-    int top[NDIM] = {LIST_NDIM(1,1,1)};
+    int top[BTDIM] = {LIST_NDIM(1,1,1)};
     int includes[1] = {1};
     BittreeAmr bt = BittreeAmr(top,includes);
 

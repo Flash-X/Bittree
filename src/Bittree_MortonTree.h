@@ -1,12 +1,12 @@
 #ifndef BITTREE_MORTONTREE_H__
 #define BITTREE_MORTONTREE_H__
 
-#include "Bittree_bitarray.h"
+#include "Bittree_BitArray.h"
 #include "Bittree_constants.h"
 
 namespace bittree {
-  unsigned rect_coord_to_mort(const unsigned domain[NDIM], const unsigned coord[NDIM]);
-  void rect_mort_to_coord(const unsigned domain[NDIM], unsigned mort, unsigned coord[NDIM]);
+  unsigned rect_coord_to_mort(const unsigned domain[BTDIM], const unsigned coord[BTDIM]);
+  void rect_mort_to_coord(const unsigned domain[BTDIM], unsigned mort, unsigned coord[BTDIM]);
 
   /** MortonTree is a bitmap with metadata to make it a properly defined mesh.
    *
@@ -19,7 +19,7 @@ namespace bittree {
       unsigned mort;
       unsigned level;
       bool is_parent;
-      unsigned coord[NDIM];
+      unsigned coord[BTDIM];
     };
 
     struct LevelStruct {
@@ -29,7 +29,7 @@ namespace bittree {
 
   public:
     MortonTree() {}
-    MortonTree(const int blks[NDIM], const int includes[]);
+    MortonTree(const int blks[BTDIM], const int includes[]);
     ~MortonTree() = default;
 
     // Getters
@@ -47,8 +47,8 @@ namespace bittree {
     bool block_is_parent(unsigned id) const;
     unsigned block_level(unsigned id) const;
     Block locate(unsigned id) const;
-    bool inside(unsigned lev, const unsigned coord[NDIM]) const;
-    Block identify(unsigned lev, const unsigned coord[NDIM]) const;
+    bool inside(unsigned lev, const unsigned coord[BTDIM]) const;
+    Block identify(unsigned lev, const unsigned coord[BTDIM]) const;
 
     std::shared_ptr<MortonTree> refine(std::shared_ptr<const BitArray> delta) const;
     void bitid_list(unsigned mort_min,unsigned mort_max, int *out ) const;
@@ -64,7 +64,7 @@ namespace bittree {
   private:
     // Member variables
     unsigned levs_;                        //!< Current number of levels
-    unsigned lev0_blks_[NDIM];             //!< Number of top level blocks
+    unsigned lev0_blks_[BTDIM];             //!< Number of top level blocks
     unsigned id0_;                         //!< id of first block
     std::vector<LevelStruct> level_;       //!< Upper bound on ids for each level
   };

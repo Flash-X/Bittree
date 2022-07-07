@@ -1,7 +1,7 @@
 #ifndef BITTREE_BITARRAY_H__
 #define BITTREE_BITARRAY_H__
 
-#include "Bittree_prelude.h"
+#include "Bittree_Prelude.h"
 
 namespace bittree {
 

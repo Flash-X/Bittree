@@ -28,8 +28,8 @@ int main(int argc, char* argv[]) {
     MPI_Comm comm = MPI_COMM_WORLD;
 
     // Initialize mesh with 1 block on the top level.
-    int top[NDIM];
-    for(unsigned d=0; d<NDIM; ++d) top[d] = 1;
+    int top[BTDIM];
+    for(unsigned d=0; d<BTDIM; ++d) top[d] = 1;
     int includes[1] = {1};
     auto mesh = std::make_shared<BittreeAmr>(top,includes);
 
