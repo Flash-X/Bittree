@@ -101,7 +101,6 @@ TEST_F(BittreeUnitTest,RefinementTest){
               bittree_refine_mark(&bitid,&val);
           }
     }}}
-
     bittree_refine_update();
     bittree_refine_apply();
 
@@ -393,44 +392,156 @@ TEST_F(BittreeUnitTest,CppInterface){
     static constexpr unsigned K1D = unsigned(BTDIM>=1);
     static constexpr unsigned K2D = unsigned(BTDIM>=2);
     static constexpr unsigned K3D = unsigned(BTDIM>=3);
+    MPI_Comm comm = MPI_COMM_WORLD;
     int top[BTDIM] = {LIST_NDIM(1,1,1)};
     int includes[1] = {1};
     BittreeAmr bt = BittreeAmr(top,includes);
 
-    unsigned iterations=7;
-    unsigned lev,xlim,ylim,zlim,numpars=0;
+    unsigned maxLev=6;
+    unsigned xlim,ylim,zlim,numpars=0;
     unsigned ijk[3];
     std::shared_ptr<MortonTree> tree;
-    for(unsigned iter=0; iter<iterations; ++iter) {
+    for(unsigned lev=0; lev<maxLev; ++lev) {
       bt.refine_init();
       tree = bt.getTree();
-      lev = iter;
-      xlim = ((1u<<iter) - 1)*K1D + 1;
-      ylim = ((1u<<iter) - 1)*K2D + 1;
-      zlim = ((1u<<iter) - 1)*K3D + 1;
+      xlim = ((1u<<lev) - 1)*K1D + 1;
+      ylim = ((1u<<lev) - 1)*K2D + 1;
+      zlim = ((1u<<lev) - 1)*K3D + 1;
       for(    unsigned k=0; k<zlim; ++k) {
         for(  unsigned j=0; j<ylim; ++j) {
           for(unsigned i=0; i<xlim; ++i) {
             if(!(i<=xlim/2 && j<=ylim/2 && k<=zlim/2)) continue;
             ijk[0]=i; ijk[1]=j; ijk[2]=k;
             MortonTree::Block b = tree->identify(lev,ijk);
-            bt.refine_mark(b.id,true);
-            numpars++;
+            if(b.level==lev) bt.refine_mark(b.id,true);
+            if(lev<maxLev-1) numpars++;
       }}}
+      bt.refine_reduce(comm);
+      bt.refine_update();
+      bt.refine_apply();
+    }
+
+    // Derefine finest layer
+    {
+      unsigned lev = maxLev;
+      bt.refine_init();
+      tree = bt.getTree();
+      xlim = ((1u<<lev) - 1)*K1D + 1;
+      ylim = ((1u<<lev) - 1)*K2D + 1;
+      zlim = ((1u<<lev) - 1)*K3D + 1;
+      for(    unsigned k=0; k<zlim; ++k) {
+        for(  unsigned j=0; j<ylim; ++j) {
+          for(unsigned i=0; i<xlim; ++i) {
+            ijk[0]=i/2; ijk[1]=j/2; ijk[2]=k/2;
+            MortonTree::Block b = tree->identify(lev-1,ijk);
+            if (b.is_parent && b.level==lev-1) bt.refine_mark(b.id,true);
+      }}}
+      bt.refine_reduce_and(comm);
       bt.refine_update();
       bt.refine_apply();
     }
 
     tree = bt.getTree();
 
+    std::string msg = bt.slice_to_string(0);
+    msg = bt.slice_to_string(1);
+    msg = bt.slice_to_string(2);
+    msg = bt.slice_to_string(10);
+    ASSERT_EQ( msg, "Error: datatype must be 0(bitid), 1(mort), or 2(parent)!\n");
+
     // Quick check of getParentId
     ASSERT_EQ( tree->getParentId(15), SELECT_NDIM(8u,4u,2u) );
+    ASSERT_EQ( tree->getParentId(1), 1u );
+
+    // Quick check of level_blocks
+    ASSERT_EQ( tree->level_blocks(1), SELECT_NDIM(2u,4u,8u) );
 
     auto bits = tree->bits_;
     std::cout << "End of test block count=" << tree->blocks() << std::endl;
     std::cout << "End of test bit length=" << bits->length() << std::endl;
     auto id0 = tree->level_id0(0);
-    auto id1 = tree->level_id0(iterations);
+    auto id1 = tree->level_id0(maxLev-1);
+    ASSERT_EQ( bits->count(id0,id1), numpars);
+
+
+}
+
+TEST_F(BittreeUnitTest,DomainWithHoles){
+    static constexpr unsigned K1D = unsigned(BTDIM>=1);
+    static constexpr unsigned K2D = unsigned(BTDIM>=2);
+    static constexpr unsigned K3D = unsigned(BTDIM>=3);
+    MPI_Comm comm = MPI_COMM_WORLD;
+    int top[BTDIM] = {LIST_NDIM(2,2,2)};
+#if BTDIM==1
+    int includes[2] = {1,0};
+#elif BTDIM==2
+    int includes[4] = {1,1,1,0};
+#else
+    int includes[8] = {1,1,1,0,1,1,1,1}
+#endif
+    BittreeAmr bt = BittreeAmr(top,includes);
+
+    unsigned maxLev=3;
+    unsigned xlim,ylim,zlim,numpars=0;
+    unsigned ijk[3];
+    std::shared_ptr<MortonTree> tree;
+    for(unsigned lev=0; lev<maxLev; ++lev) {
+      bt.refine_init();
+      tree = bt.getTree();
+      xlim = ((2u<<lev) - 1)*K1D + 1;
+      ylim = ((2u<<lev) - 1)*K2D + 1;
+      zlim = ((2u<<lev) - 1)*K3D + 1;
+      for(    unsigned k=0; k<zlim; ++k) {
+        for(  unsigned j=0; j<ylim; ++j) {
+          for(unsigned i=0; i<xlim; ++i) {
+            ijk[0]=i; ijk[1]=j; ijk[2]=k;
+            if(tree->inside(lev,ijk)) {
+                MortonTree::Block b = tree->identify(lev,ijk);
+                if(b.level==lev) {
+                    bt.refine_mark(b.id,true);
+                    if(lev<maxLev-1) numpars++;
+                }
+            }
+      }}}
+      bt.refine_reduce(comm);
+      bt.refine_update();
+      bt.refine_apply();
+    }
+
+    // Derefine finest layer
+    {
+      unsigned lev = maxLev;
+      bt.refine_init();
+      tree = bt.getTree();
+      xlim = ((2u<<lev) - 1)*K1D + 1;
+      ylim = ((2u<<lev) - 1)*K2D + 1;
+      zlim = ((2u<<lev) - 1)*K3D + 1;
+      for(    unsigned k=0; k<zlim; ++k) {
+        for(  unsigned j=0; j<ylim; ++j) {
+          for(unsigned i=0; i<xlim; ++i) {
+            ijk[0]=i/2; ijk[1]=j/2; ijk[2]=k/2;
+            if(tree->inside(lev,ijk)) {
+                MortonTree::Block b = tree->identify(lev-1,ijk);
+                if (b.is_parent && b.level==lev-1) bt.refine_mark(b.id,true);
+            }
+      }}}
+      bt.refine_reduce_and(comm);
+      bt.refine_update();
+      bt.refine_apply();
+    }
+
+    tree = bt.getTree();
+
+    std::cout << bt.slice_to_string(0);
+
+    //// Quick check of level_blocks
+    ASSERT_EQ( tree->level_blocks(1), SELECT_NDIM(2u,12u,56u) );
+
+    auto bits = tree->bits_;
+    std::cout << "End of test block count=" << tree->blocks() << std::endl;
+    std::cout << "End of test bit length=" << bits->length() << std::endl;
+    auto id0 = tree->level_id0(0);
+    auto id1 = tree->level_id0(maxLev-1);
     ASSERT_EQ( bits->count(id0,id1), numpars);
 
 
