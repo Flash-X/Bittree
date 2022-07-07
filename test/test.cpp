@@ -413,12 +413,13 @@ TEST_F(BittreeUnitTest,CppInterface){
       }}}
       bt.refine_update();
       bt.refine_apply();
-      //if(iter==3) std::cout << bt.slice_to_string(2);
     }
 
-    //if(iterations<=4) std::cout << bt.slice_to_string(2,0);
-
     tree = bt.getTree();
+
+    // Quick check of getParentId
+    ASSERT_EQ( tree->getParentId(15), SELECT_NDIM(8u,4u,2u) );
+
     auto bits = tree->bits_;
     std::cout << "End of test block count=" << tree->blocks() << std::endl;
     std::cout << "End of test bit length=" << bits->length() << std::endl;

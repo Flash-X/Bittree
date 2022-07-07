@@ -146,6 +146,20 @@ namespace bittree {
     return level_[lev].id1 - (lev == 0 ? id0_ : level_[lev-1].id1);
   }
 
+  unsigned MortonTree::getParentId(unsigned id) const {
+    unsigned lev = block_level(id);
+    if(lev>0) {
+      unsigned levIdx = id - level_id0(lev);
+      unsigned parIdx = levIdx / (1u<<NDIM);
+      for(unsigned pid=level_id0(lev-1); pid<level_id1(lev-1); ++pid) {
+        if(block_is_parent(pid)) {
+          if(parIdx == bits_->count(level_id0(lev-1), pid)) return pid;
+        }
+      }
+    }
+    return id;
+  }
+
   bool MortonTree::block_is_parent(unsigned id) const {
     if(levs_>1) return id < level_[levs_-2].id1 && bits_->get(id);
     else return false;

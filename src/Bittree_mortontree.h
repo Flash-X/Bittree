@@ -43,6 +43,7 @@ namespace bittree {
     unsigned level_blocks(unsigned lev) const;
 
     // Other member functions
+    unsigned getParentId(unsigned id) const;
     bool block_is_parent(unsigned id) const;
     unsigned block_level(unsigned id) const;
     Block locate(unsigned id) const;
