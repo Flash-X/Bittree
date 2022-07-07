@@ -70,6 +70,9 @@ protected:
 };
 
 TEST_F(BittreeUnitTest,RefinementTest){
+    static constexpr int K1D = int(BTDIM>=1);
+    static constexpr int K2D = int(BTDIM>=2);
+    static constexpr int K3D = int(BTDIM>=3);
 
     // Declare some variables
     int lev,mort,bitid,count;
@@ -387,6 +390,9 @@ TEST_F(BittreeUnitTest,BittreeCore){
 
 
 TEST_F(BittreeUnitTest,CppInterface){
+    static constexpr unsigned K1D = unsigned(BTDIM>=1);
+    static constexpr unsigned K2D = unsigned(BTDIM>=2);
+    static constexpr unsigned K3D = unsigned(BTDIM>=3);
     int top[BTDIM] = {LIST_NDIM(1,1,1)};
     int includes[1] = {1};
     BittreeAmr bt = BittreeAmr(top,includes);

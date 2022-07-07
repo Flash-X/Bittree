@@ -108,9 +108,6 @@ def main():
         f.write("#ifndef BITTREE_CONSTANTS_H__\n#define BITTREE_CONSTANTS_H__\n\n")
 
         f.write("#define BTDIM       {}\n".format(args.dim))
-        f.write("#define K1D         {}\n".format(int(args.dim>=1)))
-        f.write("#define K2D         {}\n".format(int(args.dim>=2)))
-        f.write("#define K3D         {}\n".format(int(args.dim>=3)))
 
         f.write("#endif\n")
 

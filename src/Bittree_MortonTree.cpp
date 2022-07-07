@@ -445,7 +445,7 @@ namespace bittree {
   std::string MortonTree::print_slice(unsigned datatype, unsigned slice) const {
     static const std::vector<std::string> dtypes { "bitid", "mort", "parent" };
 
-    unsigned k = K3D*slice;
+    unsigned k = BTDIM>=3 ? slice : 0;
 
     std::ostringstream buffer;
     buffer << "Bittree, datatype=" << dtypes[datatype];
@@ -457,7 +457,7 @@ namespace bittree {
       buffer << "lev=" << lev <<'\n';
       
       unsigned xlim = top_size(0)<<lev;
-      unsigned ylim = ((top_size(1)<<lev) - 1)*K2D + 1;
+      unsigned ylim = 1 + (BTDIM>=2 ? (top_size(1)<<lev) - 1 : 0);
       std::vector<unsigned> coord(BTDIM);
       coord[2] = k; //slice
       for(  unsigned j=0; j < ylim; ++j) {
