@@ -14,13 +14,13 @@ from subprocess import check_output
 
 def main():
     # Parse command line args
-    parser = argparse.ArgumentParser(description='Runtime Setup Tool')
-    parser.add_argument('test',type=str,help='Name of test')
-    parser.add_argument('--build','-b',type=str,default='build',help='build directory')
-    parser.add_argument('--dim','-d',type=int,help='Dimensionality of test.')
+    parser = argparse.ArgumentParser(description='Bittree Setup Tool')
+    parser.add_argument('test',type=str,help='testName or library')
+    parser.add_argument('--build','-b',type=str,default='build',help='Build directory.')
+    parser.add_argument('--dim','-d',type=int,help='Dimensionality.')
     parser.add_argument('--debug',action="store_true",help='Set up in debug mode.')
     parser.add_argument('--coverage','-c',action="store_true",help='Enable code coverage.')
-    parser.add_argument('--prefix',type=str,help='Where to install library')
+    parser.add_argument('--prefix',type=str,help='Where to install library.')
     args = parser.parse_args()
 
     print("Bittree setup")
@@ -101,7 +101,7 @@ def main():
             f.write("# Should be current dir (i.e. `.`) if not linking prebuilt library\n")
             f.write("LIB_BITTREE = .\n")
 
-    # Write Orchestration_constants.h in builddir
+    # Write Bittree_constants.h in builddir
     print("Writing Bittree_constants.h")
     constantsFile = os.path.join(buildDir,'Bittree_constants.h')
     with open(constantsFile,'w') as f:

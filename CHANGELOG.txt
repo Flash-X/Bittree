@@ -1,3 +1,11 @@
+2022-08-15
+==========
+- Adding Apache 2.0 license
+
+2022-07-07
+==========
+- Updating repo to prepare for release. Renaming files, changing variable names, etc.
+
 2021-08-18
 ==========
 
