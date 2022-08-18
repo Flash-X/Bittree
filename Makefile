@@ -98,18 +98,18 @@ libbittree.a: $(OBJS_BASE) $(MAKEFILES)
 install:
 ifdef LIBONLY
 	$(info Creating prefix: $(LIB_BITTREE_PREFIX))
-	@mkdir -p $(BASEDIR)/$(LIB_BITTREE_PREFIX)
-	@mkdir -p $(BASEDIR)/$(LIB_BITTREE_PREFIX)/include
-	@mkdir -p $(BASEDIR)/$(LIB_BITTREE_PREFIX)/lib
+	@mkdir -p $(LIB_BITTREE_PREFIX)
+	@mkdir -p $(LIB_BITTREE_PREFIX)/include
+	@mkdir -p $(LIB_BITTREE_PREFIX)/lib
 
 	$(info Installing library...)
-	@cp libbittree.a $(BASEDIR)/$(LIB_BITTREE_PREFIX)/lib
+	@cp libbittree.a $(LIB_BITTREE_PREFIX)/lib
 
 	$(info Installing headers...)
-	@cp setup.log $(BASEDIR)/$(LIB_BITTREE_PREFIX)
-	@cp Bittree_constants.h $(BASEDIR)/$(LIB_BITTREE_PREFIX)/include
+	@cp setup.log $(LIB_BITTREE_PREFIX)
+	@cp Bittree_constants.h $(LIB_BITTREE_PREFIX)/include
 	@for filename in $(HEADERS_BASE); do \
-	    cp $$filename $(BASEDIR)/$(LIB_BITTREE_PREFIX)/include; \
+	    cp $$filename $(LIB_BITTREE_PREFIX)/include; \
 	    done
 	$(info Success!)
 endif
