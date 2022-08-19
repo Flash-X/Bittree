@@ -31,6 +31,8 @@ container = "bittree"
 publish = [
     "python3 setup.py library --dim 2 --prefix /home/lib/bittree/2D",
     "cd build && make && make install",
+    "python3 setup.py library --dim 3 --prefix /home/lib/bittree/3D",
+    "cd build && make && make install",
     "rm -rf build",
 ]
 
