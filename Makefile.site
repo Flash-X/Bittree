@@ -1,6 +1,5 @@
 # Define the following paths:
-#  - BASEDIR: Path to the repository root directory
-BASEDIR      = $(HOME)/Documents/bittree
+#  - GTESTDIR: Path to the google test directory
 GTESTDIR     = $(HOME)/Documents/googletest/googletest
 
 # Define the following compiler-related flags
