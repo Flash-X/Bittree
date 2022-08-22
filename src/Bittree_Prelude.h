@@ -4,6 +4,8 @@
  *  Sets up a Logarithm function that has size_t as its input and output type
  */
 /*
+   Copyright 2022 UChicago Argonne, LLC and contributors
+
    Licensed under the Apache License, Version 2.0 (the "License"); 
    you may not use this file except in compliance with the License. 
     
