@@ -2,7 +2,7 @@
 
 # Name of the base image which will
 # be used to build the local image
-base = "ubuntu"
+base = "ubuntu:20.04"
 
 # Name of the local image that will be
 # used to pour the container and add layers
