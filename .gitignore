@@ -9,3 +9,4 @@ Coverage_Report/*
 *.swp
 lcov_temp.info
 build*
+Maplefile
