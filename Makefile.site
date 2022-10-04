@@ -11,7 +11,13 @@ GTESTDIR     = $(HOME)/Documents/googletest/googletest
 CXXCOMPNAME  = gnu
 CXXCOMP      = mpicxx
 
-CXXFLAGS_PROD = -g -O0
+ifeq ($(CXXCOMPNAME),gnu)
+   CXXFLAGS_PROD = -g -O3
+else ifeq ($(CXXCOMPNAME), pgi)
+   CXXFLAGS_PROD = -g -O2 -gopt -fast
+else
+   CXXFLAGS_PROD = -g -O0
+endif
 
 CXXFLAGS_DEBUG = -g -O0 \
 -Wall -Wextra -pedantic -Wconversion\
