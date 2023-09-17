@@ -1,13 +1,15 @@
 name: publish
 
 on:
-  push:
-    branches: 
-      - main
-    paths-ignore:
-      - '**.md'
-      - 'LICENSE'
-      - 'CITATION'
+  #push:
+  #  branches: 
+  #    - main
+  #  paths-ignore:
+  #    - '**.md'
+  #    - 'LICENSE'
+  #    - 'CITATION'
+
+  workflow_dispatch:
 
 jobs:
 

@@ -9,6 +9,8 @@ on:
       - 'LICENSE'
       - 'CITATION'
 
+  workflow_dispatch:
+
 jobs:
 
   mesh:
