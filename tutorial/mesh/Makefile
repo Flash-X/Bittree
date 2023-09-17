@@ -25,7 +25,7 @@ CXXFLAGS_DEBUG = -g -O0 \
 
 CXXFLAGS_BITTREE = -I$(BITTREE_LIB)/include
 
-LDFLAGS_STD = -lstdc++ -L$(BITTREE_LIB)/lib -lbittree
+LDFLAGS_STD = -lstdc++ -L$(BITTREE_LIB)/lib -lbittree -lmpi_cxx
 
 # Use C++11 standard, flags differ by compiler
 # -MMD generates a dependecy list for each file as a side effect

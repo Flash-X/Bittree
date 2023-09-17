@@ -22,19 +22,19 @@ RM ?= /bin/rm
 # Use C++11 standard, flags differ by compiler
 # -MMD generates a dependecy list for each file as a side effect
 ifeq ($(CXXCOMPNAME),gnu)
-CXXFLAGS_STD = -std=c++11
-DEPFLAG = -MMD
+   CXXFLAGS_STD = -std=c++11
+   DEPFLAG = -MMD
 else ifeq ($(CXXCOMPNAME), pgi)
-CXXFLAGS_STD = -std=c++11
-DEPFLAG = -MMD
+   CXXFLAGS_STD = -std=c++11
+   DEPFLAG = -MMD
 else ifeq ($(CXXCOMPNAME), ibm)
-CXXFLAGS_STD = -std=c++11
-DEPFLAG = -MMD
+   CXXFLAGS_STD = -std=c++11
+   DEPFLAG = -MMD
 else ifeq ($(CXXCOMPNAME), llvm)
-CXXFLAGS_STD = -std=c++11
-DEPFLAG = -MMD
+   CXXFLAGS_STD = -std=c++11
+   DEPFLAG = -MMD
 else
-$(info $(CXXCOMPNAME) compiler not yet supported.)
+   $(info $(CXXCOMPNAME) compiler not yet supported.)
 endif
 
 
@@ -98,18 +98,18 @@ libbittree.a: $(OBJS_BASE) $(MAKEFILES)
 install:
 ifdef LIBONLY
 	$(info Creating prefix: $(LIB_BITTREE_PREFIX))
-	@mkdir -p $(BASEDIR)/$(LIB_BITTREE_PREFIX)
-	@mkdir -p $(BASEDIR)/$(LIB_BITTREE_PREFIX)/include
-	@mkdir -p $(BASEDIR)/$(LIB_BITTREE_PREFIX)/lib
+	@mkdir -p $(LIB_BITTREE_PREFIX)
+	@mkdir -p $(LIB_BITTREE_PREFIX)/include
+	@mkdir -p $(LIB_BITTREE_PREFIX)/lib
 
 	$(info Installing library...)
-	@cp libbittree.a $(BASEDIR)/$(LIB_BITTREE_PREFIX)/lib
+	@cp libbittree.a $(LIB_BITTREE_PREFIX)/lib
 
 	$(info Installing headers...)
-	@cp setup.log $(BASEDIR)/$(LIB_BITTREE_PREFIX)
-	@cp Bittree_constants.h $(BASEDIR)/$(LIB_BITTREE_PREFIX)/include
+	@cp setup.log $(LIB_BITTREE_PREFIX)
+	@cp Bittree_constants.h $(LIB_BITTREE_PREFIX)/include
 	@for filename in $(HEADERS_BASE); do \
-	    cp $$filename $(BASEDIR)/$(LIB_BITTREE_PREFIX)/include; \
+	    cp $$filename $(LIB_BITTREE_PREFIX)/include; \
 	    done
 	$(info Success!)
 endif

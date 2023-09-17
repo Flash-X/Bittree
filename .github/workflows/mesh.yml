@@ -1,0 +1,27 @@
+name: test
+
+on:
+  #pull_request:
+  #  branches: 
+  #    - main
+  #  paths-ignore:
+  #    - '**.md'
+  #    - 'LICENSE'
+  #    - 'CITATION'
+
+  workflow_dispatch:
+
+jobs:
+
+  mesh:
+    name: "mesh" 
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2      
+    - uses: akashdhruv/Maple/.github/actions/maple@main
+    - name: Run Bittree Tutorial
+      run: |
+          maple image build bittree --as-root
+          maple container publish --image=bittree
+          maple container run "cd tutorial/mesh && make DEBUG=false BITTREE_LIB=/home/lib/bittree/2D && \
+                               ./bittree_mesh_tutorial.x && make clean && rm bittree_mesh_tutorial.x"
