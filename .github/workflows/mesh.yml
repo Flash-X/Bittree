@@ -1,13 +1,13 @@
 name: test
 
 on:
-  pull_request:
-    branches: 
-      - main
-    paths-ignore:
-      - '**.md'
-      - 'LICENSE'
-      - 'CITATION'
+  #pull_request:
+  #  branches: 
+  #    - main
+  #  paths-ignore:
+  #    - '**.md'
+  #    - 'LICENSE'
+  #    - 'CITATION'
 
   workflow_dispatch:
 
