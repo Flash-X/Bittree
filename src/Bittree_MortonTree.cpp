@@ -390,16 +390,11 @@ namespace bittree {
     bool is_par; 
     unsigned ix = id0_;           //current scan index
     unsigned lev = 0;          //current scanning level
-    bool childrenDone[levs_];
-    unsigned pos[levs_]; //location on each level (increases monotonically)
+    std::vector<bool> childrenDone(levs_, false);
+    std::vector<unsigned> pos(levs_, 0u); //location on each level (increases monotonically)
     unsigned mort = 0;
     //DBG_ASSERT(mort_max <= blocks());
     //DBG_ASSERT(mort_min <= mort_max);
-
-    for (unsigned i=0; i<levs_; i++){
-      childrenDone[i] = false;
-      pos[i] = 0;
-    }
 
     //each iteration either advances ix by one, or goes up/down one level
     while(mort < mort_max) {

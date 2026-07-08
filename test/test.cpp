@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <algorithm>
+#include <vector>
 
 #include "macros.h"
 #include "Bittree_fi.h"
@@ -60,9 +61,8 @@ protected:
     BittreeUnitTest(void) {
       int nbase = CONCAT_NDIM(2,*3,*4);
       int top[BTDIM] = {LIST_NDIM(2,3,4)};
-      int includes[nbase];
-      for(int i=0; i<nbase; i++) includes[i] = 1;
-      bittree_init(top, includes);
+      std::vector<int> includes(static_cast<std::size_t>(nbase), 1);
+      bittree_init(top, includes.data());
     }
 
     ~BittreeUnitTest(void) {
@@ -333,7 +333,7 @@ TEST_F(BittreeUnitTest,BittreeCore){
     updated = false;
     int mmin = 1;
     int mmax = SELECT_NDIM(2,4,19);
-    int bitid_list[mmax-mmin];
+    std::vector<int> bitid_list(static_cast<std::size_t>(mmax-mmin));
 #if BTDIM==1
     int true_list[2] = {2,3};
 #elif BTDIM==2
@@ -341,15 +341,15 @@ TEST_F(BittreeUnitTest,BittreeCore){
 #else
     int true_list[24] = {24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47};
 #endif
-    bittree_get_bitid_list(&updated, &mmin, &mmax, bitid_list);
+    bittree_get_bitid_list(&updated, &mmin, &mmax, bitid_list.data());
     for( int i=mmin; i<mmax; ++i) {
-        ASSERT_EQ( bitid_list[i-mmin], true_list[i] ); 
+        ASSERT_EQ( bitid_list[static_cast<std::size_t>(i-mmin)], true_list[i] );
     }
 
     updated = true;
     mmin = 1;
     mmax = SELECT_NDIM(3,7,28);
-    int bitid_list_2[mmax-mmin];
+    std::vector<int> bitid_list_2(static_cast<std::size_t>(mmax-mmin));
 #if BTDIM==1
     int true_list_2[4] = {2,4,5,3};
 #elif BTDIM==2
@@ -358,9 +358,9 @@ TEST_F(BittreeUnitTest,BittreeCore){
     int true_list_2[32] = {24,48,49,50,51,52,53,54,55,25,26,27,28,29,30,31,32,33,34,35,36,
                            37,38,39,40,41,42,43,44,45,46,47};
 #endif
-    bittree_get_bitid_list(&updated, &mmin, &mmax, bitid_list_2);
+    bittree_get_bitid_list(&updated, &mmin, &mmax, bitid_list_2.data());
     for( int i=mmin; i<mmax; ++i) {
-        ASSERT_EQ( bitid_list_2[i-mmin], true_list_2[i] ); 
+        ASSERT_EQ( bitid_list_2[static_cast<std::size_t>(i-mmin)], true_list_2[i] );
     }
 
 
@@ -551,7 +551,7 @@ TEST_F(BittreeUnitTest,DomainWithHoles){
     // Check bitid_list
     unsigned mmin = 0;
     unsigned mmax = SELECT_NDIM(3,11,39);
-    int bitid_list[mmax-mmin];
+    std::vector<int> bitid_list(static_cast<std::size_t>(mmax-mmin));
 #if BTDIM==1
     int true_list[3] = {2,3,4};
 #elif BTDIM==2
@@ -559,7 +559,7 @@ TEST_F(BittreeUnitTest,DomainWithHoles){
 #else
     int true_list[39] = {8,15,16,17,18,19,20,21,22,9,23,24,25,26,27,28,29,30,10,11,31,32,33,34,35,36,37,38,12,39,40,41,42,43,44,45,46,13,14};
 #endif
-    tree->bitid_list(mmin, mmax, bitid_list);
+    tree->bitid_list(mmin, mmax, bitid_list.data());
     for( unsigned i=mmin; i<mmax; ++i) {
         ASSERT_EQ( bitid_list[i-mmin], true_list[i] );
     }
