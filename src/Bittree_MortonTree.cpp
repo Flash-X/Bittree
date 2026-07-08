@@ -118,7 +118,7 @@ namespace bittree {
     }
     // ok bitarray done.  since there's only one level, we dont store any block bits
     bits_ = bldr.finish();
-    level_.push_back(LevelStruct{.id1 = lev0_id1});
+    level_.push_back(LevelStruct{lev0_id1});
   }
 
   unsigned MortonTree::levels() const {
