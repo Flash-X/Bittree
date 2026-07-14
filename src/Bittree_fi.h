@@ -1,15 +1,15 @@
 /*
    Copyright 2022 UChicago Argonne, LLC and contributors
 
-   Licensed under the Apache License, Version 2.0 (the "License"); 
-   you may not use this file except in compliance with the License. 
-    
- 
-   Unless required by applicable law or agreed to in writing, software 
-   distributed under the License is distributed on an "AS IS" BASIS, 
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-   See the License for the specific language governing permissions and 
-   limitations under the License.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 #ifndef BITTREE_FI_H__
 #define BITTREE_FI_H__
@@ -70,7 +70,7 @@ extern "C" void bittree_is_parent(
     bool *parent_check  //out
   );
 
-/** Wrapper function for TheTree's identify, which 
+/** Wrapper function for TheTree's identify, which
   * itself wraps MortonTree's identify */
 extern "C" void bittree_identify(
     bool *updated,      //in
@@ -80,7 +80,7 @@ extern "C" void bittree_identify(
     int *bitid          //out
   );
 
-/** Wrapper function for TheTree's locate, which 
+/** Wrapper function for TheTree's locate, which
   * itself wraps MortonTree's locate */
 extern "C" void bittree_locate(
     bool *updated,      //in
@@ -103,7 +103,7 @@ extern "C" void bittree_level_bitid_limits(
     int *ids       //out
   );
 
-/** Wrapper function for TheTree's get_bitid_list, which 
+/** Wrapper function for TheTree's get_bitid_list, which
   * itself wraps MortonTree's bitid_list */
 extern "C" void bittree_get_bitid_list(
     bool *updated,      //in
