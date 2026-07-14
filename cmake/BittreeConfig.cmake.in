@@ -1,0 +1,31 @@
+@PACKAGE_INIT@
+
+# This package is dimension-specific: it was installed under <prefix>/@BITTREE_DIM@d
+# and provides exactly the "@BITTREE_DIM@d" component. Downstreams can inspect the
+# dimension via Bittree_NDIM.
+set(Bittree_NDIM @BITTREE_DIM@)
+set(Bittree_@BITTREE_DIM@d_FOUND TRUE)
+
+# Fail fast (before importing any targets or resolving MPI) if the caller asked
+# for a dimension this install does not provide, e.g.
+#   find_package(Bittree REQUIRED COMPONENTS 2d)
+# pointed at a 3D install. Selection between the independent 1d/2d/3d installs is
+# by path (Bittree_ROOT / CMAKE_PREFIX_PATH / Bittree_DIR); this check turns a
+# wrong path into a clear error instead of a silently-wrong dimension.
+foreach(_bittree_comp IN LISTS Bittree_FIND_COMPONENTS)
+  if(NOT _bittree_comp STREQUAL "@BITTREE_DIM@d")
+    set(Bittree_FOUND FALSE)
+    set(Bittree_NOT_FOUND_MESSAGE
+        "This Bittree install is @BITTREE_DIM@d, but component '${_bittree_comp}' was requested. Point find_package at the matching install, e.g. -DBittree_ROOT=<prefix>/${_bittree_comp}")
+    return()
+  endif()
+endforeach()
+
+# Bittree is a static library whose public headers include <mpi.h>, so any
+# consumer transitively needs MPI. Resolve it before importing the targets.
+include(CMakeFindDependencyMacro)
+find_dependency(MPI)
+
+include("${CMAKE_CURRENT_LIST_DIR}/BittreeTargets.cmake")
+
+check_required_components(Bittree)
