@@ -20,8 +20,8 @@ set(dimtag "${BITTREE_CURRENT_DIM}d")
 set(testtgt "bittree_unit_test_${dimtag}")
 
 add_executable(${testtgt}
-    test.cpp
-    main.cpp)
+  test.cpp
+  main.cpp)
 
 set_target_properties(${testtgt} PROPERTIES OUTPUT_NAME bittree_unit_test.x)
 

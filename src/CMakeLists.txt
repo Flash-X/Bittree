@@ -25,19 +25,19 @@ set(libtgt "bittree_${dimtag}")
 set(gendir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(BITTREE_DIM ${BITTREE_CURRENT_DIM})
 configure_file(
-    "${PROJECT_SOURCE_DIR}/cmake/Bittree_constants.h.in"
-    "${gendir}/Bittree_constants.h"
-    @ONLY)
+  "${PROJECT_SOURCE_DIR}/cmake/Bittree_constants.h.in"
+  "${gendir}/Bittree_constants.h"
+  @ONLY)
 
 add_library(${libtgt} STATIC
-    Bittree_BitArray.cpp
-    Bittree_MortonTree.cpp
-    Bittree_BittreeAmr.cpp
-    Bittree_fi.cpp)
+  Bittree_BitArray.cpp
+  Bittree_MortonTree.cpp
+  Bittree_BittreeAmr.cpp
+  Bittree_fi.cpp)
 
 set_target_properties(${libtgt} PROPERTIES
-    OUTPUT_NAME bittree     # -> libbittree.a
-    EXPORT_NAME bittree)    # -> Bittree::bittree
+  OUTPUT_NAME bittree     # -> libbittree.a
+  EXPORT_NAME bittree)    # -> Bittree::bittree
 
 target_compile_features(${libtgt} PUBLIC cxx_std_17)
 
@@ -45,23 +45,23 @@ target_compile_features(${libtgt} PUBLIC cxx_std_17)
 # so consumers need both the src headers and the generated one. The matching
 # INSTALL_INTERFACE include is added by bittree_install_dimension().
 target_include_directories(${libtgt} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<BUILD_INTERFACE:${gendir}>)
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${gendir}>)
 
 target_link_libraries(${libtgt} PUBLIC MPI::MPI_CXX)
 
 if(BITTREE_ALT_MORTON_ORDER)
-    target_compile_definitions(${libtgt} PUBLIC ALT_MORTON_ORDER)
+  target_compile_definitions(${libtgt} PUBLIC ALT_MORTON_ORDER)
 endif()
 
 bittree_apply_dev_flags(${libtgt})
 
 # Install this dimension as a self-contained package under <prefix>/<N>d/.
 bittree_install_dimension(${libtgt}
-    Bittree_BitArray.h
-    Bittree_Bits.h
-    Bittree_BittreeAmr.h
-    Bittree_MortonTree.h
-    Bittree_Prelude.h
-    Bittree_fi.h
-    "${gendir}/Bittree_constants.h")
+  Bittree_BitArray.h
+  Bittree_Bits.h
+  Bittree_BittreeAmr.h
+  Bittree_MortonTree.h
+  Bittree_Prelude.h
+  Bittree_fi.h
+  "${gendir}/Bittree_constants.h")
