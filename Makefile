@@ -19,7 +19,7 @@ endif
 # Default shell commands
 RM ?= /bin/rm
 
-# Use C++11 standard, flags differ by compiler
+# Use C++17 standard, flags differ by compiler
 # -MMD generates a dependecy list for each file as a side effect
 ifeq ($(CXXCOMPNAME),gnu)
    CXXFLAGS_STD = -std=c++17
