@@ -24,7 +24,7 @@ endforeach()
 # Bittree is a static library whose public headers include <mpi.h>, so any
 # consumer transitively needs MPI. Resolve it before importing the targets.
 include(CMakeFindDependencyMacro)
-find_dependency(MPI)
+find_dependency(MPI COMPONENTS CXX)
 
 include("${CMAKE_CURRENT_LIST_DIR}/BittreeTargets.cmake")
 
