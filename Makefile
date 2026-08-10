@@ -19,19 +19,19 @@ endif
 # Default shell commands
 RM ?= /bin/rm
 
-# Use C++11 standard, flags differ by compiler
+# Use C++17 standard, flags differ by compiler
 # -MMD generates a dependecy list for each file as a side effect
 ifeq ($(CXXCOMPNAME),gnu)
-   CXXFLAGS_STD = -std=c++11
+   CXXFLAGS_STD = -std=c++17
    DEPFLAG = -MMD
 else ifeq ($(CXXCOMPNAME), pgi)
-   CXXFLAGS_STD = -std=c++11
+   CXXFLAGS_STD = -std=c++17
    DEPFLAG = -MMD
 else ifeq ($(CXXCOMPNAME), ibm)
-   CXXFLAGS_STD = -std=c++11
+   CXXFLAGS_STD = -std=c++17
    DEPFLAG = -MMD
 else ifeq ($(CXXCOMPNAME), llvm)
-   CXXFLAGS_STD = -std=c++11
+   CXXFLAGS_STD = -std=c++17
    DEPFLAG = -MMD
 else
    $(info $(CXXCOMPNAME) compiler not yet supported.)

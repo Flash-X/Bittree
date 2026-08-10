@@ -1,0 +1,6 @@
+#ifndef BITTREE_CONSTANTS_H__
+#define BITTREE_CONSTANTS_H__
+
+#define BTDIM       @BITTREE_DIM@
+
+#endif

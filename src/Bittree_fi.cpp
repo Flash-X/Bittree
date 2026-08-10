@@ -1,15 +1,15 @@
 /*
    Copyright 2022 UChicago Argonne, LLC and contributors
 
-   Licensed under the Apache License, Version 2.0 (the "License"); 
-   you may not use this file except in compliance with the License. 
-    
- 
-   Unless required by applicable law or agreed to in writing, software 
-   distributed under the License is distributed on an "AS IS" BASIS, 
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-   See the License for the specific language governing permissions and 
-   limitations under the License.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 #include "Bittree_fi.h"
 
@@ -25,7 +25,7 @@ extern "C" void bittree_init(
     int topsize[],  // in
     int includes[] // in: includes[topsize[ndim-1]]...[topsize[0]]
   ) {
- 
+
   the_tree = std::make_shared<BittreeAmr>(topsize,includes);
 }
 
@@ -185,7 +185,7 @@ extern "C" void bittree_level_bitid_limits(
   }
 }
 
-/** Wrapper function for TheTree's get_bitid_list, which 
+/** Wrapper function for TheTree's get_bitid_list, which
   * itself wraps MortonTree's bitid_list */
 extern "C" void bittree_get_bitid_list(
     bool *updated,      //in

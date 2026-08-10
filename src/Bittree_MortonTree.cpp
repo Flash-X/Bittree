@@ -1,15 +1,15 @@
 /*
    Copyright 2022 UChicago Argonne, LLC and contributors
 
-   Licensed under the Apache License, Version 2.0 (the "License"); 
-   you may not use this file except in compliance with the License. 
-    
- 
-   Unless required by applicable law or agreed to in writing, software 
-   distributed under the License is distributed on an "AS IS" BASIS, 
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-   See the License for the specific language governing permissions and 
-   limitations under the License.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 #include "Bittree_MortonTree.h"
 
@@ -53,7 +53,7 @@ namespace bittree {
       }
     }
   }
-  
+
   void rect_mort_to_coord(const unsigned domain[BTDIM], unsigned mort, unsigned coord[BTDIM]) {
     unsigned box[BTDIM];
     for(unsigned d=0; d < BTDIM; d++) {
@@ -86,10 +86,10 @@ namespace bittree {
       }
     }
   }
-  
+
   MortonTree::MortonTree(const int size_in[BTDIM], const int includes[]) {
 
-    
+
     unsigned blkpop = 1;
     unsigned size[BTDIM];
     for(unsigned d=0; d < BTDIM; d++) {
@@ -118,7 +118,7 @@ namespace bittree {
     }
     // ok bitarray done.  since there's only one level, we dont store any block bits
     bits_ = bldr.finish();
-    level_.push_back(LevelStruct{.id1 = lev0_id1});
+    level_.push_back(LevelStruct{lev0_id1});
   }
 
   unsigned MortonTree::levels() const {
@@ -138,7 +138,7 @@ namespace bittree {
     if(dim<BTDIM) return lev0_blks_[dim];
     return 0;
   }
-  
+
   unsigned MortonTree::id_upper_bound() const {
     return level_[levs_-1].id1;
   }
@@ -194,7 +194,7 @@ namespace bittree {
     }
     return bits_->get(rect_coord_to_mort(lev0_blks_, x0));
   }
-  
+
   /** Identifies morton number of a block corresponding to given coords
    *  on the current tree.*
    *  \todo error check block is inside domain */
@@ -300,9 +300,9 @@ namespace bittree {
   }
 
   std::shared_ptr<MortonTree > MortonTree::refine(std::shared_ptr<const BitArray> delta) const {
-    
+
     const std::shared_ptr<BitArray> a_bits = bits_;
-    
+
     // count the new number of levels, blocks, and bits
     unsigned b_id1 = level_[0].id1;
     unsigned b_bitlen = id0_;
@@ -316,7 +316,7 @@ namespace bittree {
       if(b_pars == 0) break;
       b_levs += 1;
     }
-    
+
     // new bit tree
     std::shared_ptr<MortonTree> b_tree = std::make_shared<MortonTree>();
     {
@@ -327,22 +327,22 @@ namespace bittree {
         b_tree->lev0_blks_[d] = lev0_blks_[d];
       // still must initialize b_tree->bits
     }
-    
+
     // apply delta and insert/remove blocks
     BitArray::Reader a_r(bits_), del_r(delta, id0_);
     FastBitArray::Builder b_w(b_bitlen);
-    
+
     // copy inclusion bits
     while(a_r.index() < id0_)
       b_w.write<1>(a_r.read<1>());
-    
+
     // do level 0...
     b_tree->level_[0].id1 = level_[0].id1;
     while(b_w.index() < b_bitlen && a_r.index() < level_[0].id1) {
       // apply delta
       b_w.write<1>(a_r.read<1>() ^ del_r.read<1>());
     }
-    
+
     // readers of previous level
     BitArray::Reader a_rp(bits_, id0_), del_rp(delta, id0_);
 
@@ -367,7 +367,7 @@ namespace bittree {
         lev += 1;
       }
     }
-    
+
     b_tree->level_[b_levs-1].id1 = b_id1;
     b_tree->bits_ = b_w.finish();
 
@@ -387,19 +387,14 @@ namespace bittree {
     * \todo error check on mort min, max
     */
   void MortonTree::bitid_list(unsigned mort_min, unsigned mort_max, int *out ) const {
-    bool is_par; 
+    bool is_par;
     unsigned ix = id0_;           //current scan index
     unsigned lev = 0;          //current scanning level
-    bool childrenDone[levs_];
-    unsigned pos[levs_]; //location on each level (increases monotonically)
+    std::vector<bool> childrenDone(levs_, false);
+    std::vector<unsigned> pos(levs_, 0u); //location on each level (increases monotonically)
     unsigned mort = 0;
     //DBG_ASSERT(mort_max <= blocks());
     //DBG_ASSERT(mort_min <= mort_max);
-
-    for (unsigned i=0; i<levs_; i++){
-      childrenDone[i] = false;
-      pos[i] = 0;
-    }
 
     //each iteration either advances ix by one, or goes up/down one level
     while(mort < mort_max) {
@@ -409,7 +404,7 @@ namespace bittree {
       if(is_par && !childrenDone[lev]) {
         ix = level_[lev].id1 + ((1u<<BTDIM) * parents_before(lev,pos[lev]));
         childrenDone[lev+1]=false;
-       
+
 #ifndef ALT_MORTON_ORDER
         if(mort<mort_max && mort>=mort_min) out[mort-mort_min] = int(pos[lev] + level_id0(lev)) ;
         mort++;
@@ -469,7 +464,7 @@ namespace bittree {
     unsigned levs = levels();
     for(unsigned lev=0; lev < levs; lev++) {
       buffer << "lev=" << lev <<'\n';
-      
+
       unsigned xlim = top_size(0)<<lev;
       unsigned ylim = 1 + (BTDIM>=2 ? (top_size(1)<<lev) - 1 : 0);
       std::vector<unsigned> coord(BTDIM);

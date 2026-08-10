@@ -1,15 +1,15 @@
 /*
    Copyright 2022 UChicago Argonne, LLC and contributors
 
-   Licensed under the Apache License, Version 2.0 (the "License"); 
-   you may not use this file except in compliance with the License. 
-    
- 
-   Unless required by applicable law or agreed to in writing, software 
-   distributed under the License is distributed on an "AS IS" BASIS, 
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-   See the License for the specific language governing permissions and 
-   limitations under the License.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 #ifndef BITTREE_BITARRAY_H__
 #define BITTREE_BITARRAY_H__
@@ -31,14 +31,14 @@ namespace bittree {
    *  BitArray works by packing the 1's and 0's into the binary representaiton of
    *  "words". A 32-bit integer can hold 32 bits. The least significant bit is
    *  in position zero. */
-  
+
   public:
     /** Definition of Word Type */
     typedef unsigned int WType;
 
     // Static variables
     /** Log_2 of memory allocated to objects of class W, in bits */
-    static const unsigned logw = Log<2,sizeof(WType)*CHAR_BIT>::val; 
+    static const unsigned logw = Log<2,sizeof(WType)*CHAR_BIT>::val;
     static const unsigned bitw = 1u << logw; /**< bitwidth of WType */
     static const WType one = WType(1);    /**< 1 cast as WType */
     static const WType ones = ~WType(0);  /**< Maximum length string of binary 1s cast as WType */
@@ -56,16 +56,16 @@ namespace bittree {
     unsigned length() const { return len_; }
     unsigned word_count() const { return (len_+bitw-1u)>>logw; }
     WType* word_buf() { return wbuf_.data(); }
-    
+
     bool get(unsigned ix) const;
     bool set(unsigned ix, bool x);
     void fill(bool x);
     void fill(bool x, unsigned ix0, unsigned ix1);
-    
+
     virtual unsigned count(unsigned ix0, unsigned ix1) const;
     unsigned count() const;
     virtual unsigned find(unsigned ix0, unsigned nth) const;
-    
+
 
   protected:
     // Private members
