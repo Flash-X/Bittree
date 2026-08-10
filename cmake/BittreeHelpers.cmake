@@ -52,12 +52,10 @@ function(bittree_install_dimension target)
   set(dim_bindir   "${dimtag}/${CMAKE_INSTALL_BINDIR}")
   set(dim_cmakedir "${dim_libdir}/cmake/Bittree")
 
-  # The public headers include Bittree_constants.h, so consumers need the
-  # installed include dir. _IMPORT_PREFIX resolves to <prefix>, so the
-  # interface path is expressed relative to it as <N>d/include.
-  target_include_directories(${target} PUBLIC
-    $<INSTALL_INTERFACE:${dim_incdir}>)
-
+  # The installed include dir is attached to the exported target by the
+  # INCLUDES DESTINATION below (it appends to the target's INSTALL_INTERFACE),
+  # so no separate target_include_directories($<INSTALL_INTERFACE:...>) is
+  # needed here -- adding both would list the directory twice.
   install(TARGETS ${target}
           EXPORT bittree_${dimtag}_targets
           ARCHIVE DESTINATION ${dim_libdir}

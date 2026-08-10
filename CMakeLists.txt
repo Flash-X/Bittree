@@ -21,26 +21,41 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # --------------------------------------------------------------------------
 # Project-wide defaults
+#
+# Bittree may be consumed as a subproject (add_subdirectory / FetchContent).
+# Anything with a global effect (cache writes, enable_testing) is therefore
+# applied only when Bittree is the top-level project, so it never hijacks a
+# parent project's settings. PROJECT_IS_TOP_LEVEL is CMake 3.21+, so derive it.
 # --------------------------------------------------------------------------
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-  message(FATAL_ERROR "In-source builds are not allowed; use e.g. `cmake -S . -B build`.")
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(BITTREE_IS_TOP_LEVEL TRUE)
+else()
+  set(BITTREE_IS_TOP_LEVEL FALSE)
 endif()
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# Directory-scoped: affects only Bittree's own targets, safe as a subproject.
 set(CMAKE_CXX_EXTENSIONS OFF)   # emit -std=c++17, not gnu++17 (matches the Make build)
 
-# Default to an optimized build (Release ~ prod); pass -DCMAKE_BUILD_TYPE=Debug
-# to get the strict warnings, mirroring `setup.py ... --debug`.
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
-endif()
+if(BITTREE_IS_TOP_LEVEL)
+  if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    message(FATAL_ERROR "In-source builds are not allowed; use e.g. `cmake -S . -B build`.")
+  endif()
 
-# Default the install prefix inside the build tree (unless given), so installs
-# are self-contained and never need a system prefix / elevated privileges.
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "Install prefix" FORCE)
-  message(STATUS "CMAKE_INSTALL_PREFIX defaulted to '${CMAKE_INSTALL_PREFIX}'.")
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+  # Default to an optimized build (Release ~ prod); pass -DCMAKE_BUILD_TYPE=Debug
+  # to get the strict warnings, mirroring `setup.py ... --debug`.
+  if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
+  endif()
+
+  # Default the install prefix inside the build tree (unless given), so installs
+  # are self-contained and never need a system prefix / elevated privileges.
+  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "Install prefix" FORCE)
+    message(STATUS "CMAKE_INSTALL_PREFIX defaulted to '${CMAKE_INSTALL_PREFIX}'.")
+  endif()
 endif()
 
 # --------------------------------------------------------------------------
@@ -48,7 +63,9 @@ endif()
 # --------------------------------------------------------------------------
 set(BITTREE_NDIM "1;2;3" CACHE STRING
     "Semicolon-separated list of dimensions to build/install; each must be 1, 2, or 3.")
-option(BITTREE_BUILD_TESTS      "Build the GoogleTest unit test (setup.py test mode)." ON)
+# Tests are on by default for a standalone build, off when embedded in a parent
+# project (a consumer should not inherit Bittree's test suite or its gtest dep).
+option(BITTREE_BUILD_TESTS      "Build the GoogleTest unit test (setup.py test mode)." ${BITTREE_IS_TOP_LEVEL})
 option(BITTREE_ENABLE_COVERAGE  "Enable code-coverage instrumentation (setup.py --coverage)." OFF)
 option(BITTREE_WERROR           "Treat warnings as errors in Debug builds." ON)
 option(BITTREE_ALT_MORTON_ORDER "Define ALT_MORTON_ORDER." OFF)
@@ -70,7 +87,9 @@ include(BittreeHelpers)
 find_package(MPI REQUIRED COMPONENTS CXX)
 
 if(BITTREE_BUILD_TESTS)
-  enable_testing()
+  if(BITTREE_IS_TOP_LEVEL)
+    enable_testing()
+  endif()
   find_package(GTest REQUIRED)
   # Homebrew/upstream export GTest::gtest_main; CMake's FindGTest module
   # exports GTest::Main. The "*_main" target pulls in the core gtest library.
@@ -86,11 +105,13 @@ endif()
 # with a distinct binary dir; the current dimension is passed down via
 # BITTREE_CURRENT_DIM (consumed by src/ and test/ CMakeLists).
 # --------------------------------------------------------------------------
+# CMAKE_CURRENT_BINARY_DIR (not CMAKE_BINARY_DIR): as a subproject the latter is
+# the *parent's* build root, which would scatter Bittree's build tree into it.
 foreach(_dim IN LISTS BITTREE_NDIM)
   set(BITTREE_CURRENT_DIM ${_dim})
-  add_subdirectory(src "${CMAKE_BINARY_DIR}/src/${_dim}d")
+  add_subdirectory(src "${CMAKE_CURRENT_BINARY_DIR}/src/${_dim}d")
   if(BITTREE_BUILD_TESTS)
-    add_subdirectory(test "${CMAKE_BINARY_DIR}/test/${_dim}d")
+    add_subdirectory(test "${CMAKE_CURRENT_BINARY_DIR}/test/${_dim}d")
   endif()
 endforeach()
 
